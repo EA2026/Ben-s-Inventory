@@ -607,8 +607,8 @@ function App() {
     lineHeight: 1.35,
   }}
 >
-      <header style={{ background: "linear-gradient(180deg, #213258 0%, #1d2d52 100%)", color: "#fff", padding: "24px 28px 20px", boxShadow: "inset 0 -1px 0 rgba(255,255,255,.08)" }}>
-        <div style={{ fontSize: 22, fontWeight: 900 }}>Home & Travel <span style={{ color: "#d0a63d" }}>Inventory</span></div>
+      <header style={{ background: "linear-gradient(180deg, #213258 0%, #1d2d52 100%)", color: "#fff", padding: "18px 32px 20px", boxShadow: "inset 0 -1px 0 rgba(255,255,255,.08)" }}>
+        <div style={{ fontSize: 18, fontWeight: 900 }}>Home & Travel <span style={{ color: "#d0a63d" }}>Inventory</span></div>
       </header>
 
       <nav style={{ background: "#33476f", borderBottom: "1px solid rgba(255,255,255,.08)", padding: "0 20px" }}>
