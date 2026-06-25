@@ -894,6 +894,15 @@ const PCOLS=[
   {state:'restocked',label:'✓ Done',      cls:'p-done'},
 ];
 
+function pCardHtml(o){
+  var sel = selOId===o.id?' sel':'';
+  var html = '<div class="pcard'+sel+'" onclick="selOrd(\'' + o.id + '\')" style="position:relative">';
+  html += '<div class="pcard-name">' + o.item + '</div>';
+  html += '<div class="pcard-meta">' + o.brand + ' · Qty: ' + o.qty + (o.note?' · '+o.note:'') + '<br>' + tAgo(o.tl[0]&&o.tl[0].ts?o.tl[0].ts:Date.now()) + '</div>';
+  html += '<button class="pcard-del" onclick="deleteOrder(\'' + o.id + '\',event)" title="Delete">✕</button>';
+  html += '</div>';
+  return html;
+}
 function renderPipeline(){
   const el=document.getElementById('pipeline'); if(!el)return;
   document.getElementById('o-req').textContent=orders.filter(o=>o.state==='requested').length;
@@ -901,12 +910,9 @@ function renderPipeline(){
   document.getElementById('o-done').textContent=orders.filter(o=>o.state==='restocked'||o.state==='declined').length;
   el.innerHTML=PCOLS.map(col=>{
     const its=orders.filter(o=>o.state===col.state||(col.state==='restocked'&&o.state==='declined'));
-    return `<div class="pcol"><div class="pcol-h"><div class="pcol-t">${col.label}</div><span class="pill pcol-n ${col.cls}">${its.length}</span></div><div class="pcol-b">${
-      its.length?its.map(o=>`<div class="pcard${selOId===o.id?' sel':''}" onclick="selOrd('${o.id}')" style="position:relative">
-            <div class="pcard-name">${o.item}</div>
-            <div class="pcard-meta">${o.brand} · Qty: ${o.qty}${o.note?' · '+o.note:''}<br>${tAgo(o.tl[0]?.ts||Date.now())}</div>
-            <button class="pcard-del" onclick="deleteOrder('${o.id}',event)" title="Delete">✕</button>
-          </div>`).join('');
+    const cards=its.length?its.map(o=>pCardHtml(o)).join(''):'<div class="pempty">None</div>';
+    return '<div class="pcol"><div class="pcol-h"><div class="pcol-t">'+col.label+'</div><span class="pill pcol-n '+col.cls+'">'+its.length+'</span></div><div class="pcol-b">'+cards+'</div></div>';
+  }).join('');
   if(selOId)renderDetail(selOId);
 }
 
@@ -1621,9 +1627,7 @@ async function approveNewReq(id){
   const r=newRequests.find(x=>x.id===id); if(!r)return;
   r.state='approved'; r.tl.push({state:'approved',ts:Date.now(),note:'Approved by owner'});
   await saveAllOrders(); renderNewRequests(); updateNRBadge();
-  window.open('mailto:'+BEN_EMAIL+'?subject='+encodeURIComponent('Request approved: '+r.item)+'&body='+encodeURIComponent('Hi Ben! Your request for '+r.item+' has been approved. I'll order it shortly!
-
-Thanks!'),'_blank');
+  window.open('mailto:'+BEN_EMAIL+'?subject='+encodeURIComponent('Request approved: '+r.item)+'&body='+encodeURIComponent('Hi Ben! Your request for '+r.item+' has been approved. I will order it shortly! Thanks!'),'_blank');
   toast('Request approved','Ben notified','g');
 }
 
@@ -1632,11 +1636,7 @@ async function declineNewReq(id){
   const note=prompt('Reason for declining (optional):')||'Not needed right now.';
   r.state='declined'; r.tl.push({state:'declined',ts:Date.now(),note});
   await saveAllOrders(); renderNewRequests(); updateNRBadge();
-  window.open('mailto:'+BEN_EMAIL+'?subject='+encodeURIComponent('Request update: '+r.item)+'&body='+encodeURIComponent('Hi Ben! Your request for '+r.item+' was declined.
-
-'+note+'
-
-Thanks!'),'_blank');
+  window.open('mailto:'+BEN_EMAIL+'?subject='+encodeURIComponent('Request update: '+r.item)+'&body='+encodeURIComponent('Hi Ben! Your request for '+r.item+' was declined.\n\n'+note+'\n\nThanks!'),'_blank');
   toast('Request declined','Ben notified','r');
 }
 
@@ -1647,15 +1647,7 @@ async function markNROrdered(id){
   r.state='ordered'; r.supplier=supplier; r.eta=eta;
   r.tl.push({state:'ordered',ts:Date.now(),note:(supplier?'From: '+supplier:'')+(eta?' · ETA: '+eta:'')});
   await saveAllOrders(); renderNewRequests(); updateNRBadge();
-  let body='Hi Ben! I've ordered '+r.item+'.';
-  if(supplier) body+='
-
-Ordered from: '+supplier;
-  if(eta) body+='
-Expected arrival: '+eta;
-  body+='
-
-I'll add it to the inventory when it arrives!';
+  var body2='Hi Ben! I have ordered '+r.item+'.'+(supplier?'\nOrdered from: '+supplier:'')+(eta?'\nExpected arrival: '+eta:'')+'\nI will add it to the inventory when it arrives!';
   window.open('mailto:'+BEN_EMAIL+'?subject='+encodeURIComponent('Ordered: '+r.item)+'&body='+encodeURIComponent(body),'_blank');
   toast('Marked as ordered','Ben notified','g');
 }
