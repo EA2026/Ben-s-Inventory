@@ -597,7 +597,16 @@ function App() {
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f6f8fc", color: "#0f172a", fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+   <div
+  style={{
+    minHeight: "100vh",
+    background: "#f6f8fc",
+    color: "#0f172a",
+    fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontSize: 14,
+    lineHeight: 1.35,
+  }}
+>
       <header style={{ background: "linear-gradient(180deg, #213258 0%, #1d2d52 100%)", color: "#fff", padding: "24px 28px 20px", boxShadow: "inset 0 -1px 0 rgba(255,255,255,.08)" }}>
         <div style={{ fontSize: 22, fontWeight: 900 }}>Home & Travel <span style={{ color: "#d0a63d" }}>Inventory</span></div>
       </header>
