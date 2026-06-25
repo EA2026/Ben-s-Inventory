@@ -142,6 +142,8 @@ tr:hover td{background:#fafafa;}
 .pcard.sel{background:var(--blue-bg);border-color:var(--blue);}
 .pcard-name{font-weight:500;font-size:13px;}
 .pcard-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.pcard-del{position:absolute;top:5px;right:5px;background:rgba(139,0,0,.1);border:none;color:var(--red);border-radius:5px;width:20px;height:20px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;}
+.pcard:hover .pcard-del{opacity:1;}
 .pempty{padding:1rem;text-align:center;font-size:12px;color:var(--muted);}
 .dbox{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
 .dbox-h{background:var(--slate);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;}
@@ -212,6 +214,16 @@ tr:hover td{background:#fafafa;}
 .toast-b{font-size:11px;color:var(--muted);}
 
 .empty{text-align:center;padding:2.5rem;color:var(--muted);font-size:13px;}
+.nrcard{background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem 1.1rem;margin-bottom:10px;}
+.nrcard.pending{border-left:3px solid var(--yellow);}
+.nrcard.approved{border-left:3px solid var(--blue);}
+.nrcard.delivered{border-left:3px solid var(--green);}
+.nrcard.declined{border-left:3px solid var(--red);opacity:.7;}
+.nrcard-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;}
+.nrcard-name{font-weight:600;font-size:14px;}
+.nrcard-meta{font-size:12px;color:var(--muted);margin-top:2px;}
+.nrcard-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.nrcard-note{font-size:12px;color:var(--muted);background:var(--ivory);border-radius:6px;padding:6px 9px;margin-top:8px;}
 .gcard{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;transition:box-shadow .15s;}
 .gcard:hover{box-shadow:0 4px 16px rgba(0,0,0,.1);}
 .gcard img{width:100%;aspect-ratio:1;object-fit:cover;background:var(--ivory);}
@@ -245,6 +257,7 @@ select.fi{background:#fff;}
   <button class="nav-btn" onclick="goTo('orders',this)">🛒 Orders <span class="nav-badge" id="orders-badge">0</span></button>
   <button class="nav-btn" onclick="goTo('pack',this)">🧳 Packing</button>
   <button class="nav-btn" onclick="goTo('gallery',this)">📷 Gallery</button>
+  <button class="nav-btn" onclick="goTo('newreq',this)" id="tab-newreq">🆕 New request <span class="nav-badge" id="newreq-badge">0</span></button>
 </nav>
 
 <!-- ═══════════════════════════════════ INVENTORY ═══════════════════════════════════ -->
@@ -342,6 +355,25 @@ select.fi{background:#fff;}
   </div>
 </div>
 
+<!-- NEW REQUEST PAGE -->
+<div class="page" id="page-newreq">
+  <div class="wrap">
+
+    <!-- Hero -->
+    <div style="background:var(--navy);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1.2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;color:#fff">🆕 New item requests</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:2px">Request a brand new item · Owner approves · Added to inventory on delivery</div>
+      </div>
+      <button class="btn btn-ok" onclick="openNewReqModal()">+ Submit new request</button>
+    </div>
+
+    <!-- Request list -->
+    <div id="newreq-list"></div>
+
+  </div>
+</div>
+
 <!-- GALLERY ADD MODAL -->
 <div class="mo-overlay" id="mo-gallery-add" style="display:none" onclick="if(event.target===this)closeGalleryAdd()">
   <div class="mo" style="max-width:520px">
@@ -417,6 +449,73 @@ select.fi{background:#fff;}
       <div style="margin-top:14px;display:flex;gap:8px">
         <button class="btn btn-ok" onclick="saveGalleryItem()" style="flex:1;justify-content:center;padding:9px">✓ Save to gallery &amp; inventory</button>
         <button class="btn btn-ghost" onclick="closeGalleryAdd()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEW REQUEST MODAL -->
+<div class="mo-overlay" id="mo-newreq" style="display:none" onclick="if(event.target===this)closeNewReqModal()">
+  <div class="mo" style="max-width:520px">
+    <div class="mo-h" style="background:var(--teams)"><h3>🆕 Request a new item</h3><button class="mo-x" onclick="closeNewReqModal()">✕</button></div>
+    <div class="mo-body">
+
+      <!-- Optional photo -->
+      <div style="margin-bottom:12px">
+        <div class="fl" style="margin-bottom:5px">Reference photo (optional)</div>
+        <div id="nrphoto-drop" onclick="document.getElementById('nrphoto-input').click()"
+          style="border:2px dashed var(--border);border-radius:10px;padding:1rem;text-align:center;cursor:pointer;background:var(--ivory)">
+          <div id="nrphoto-preview-wrap" style="display:none;margin-bottom:6px">
+            <img id="nrphoto-preview" src="" style="max-height:100px;border-radius:7px;object-fit:contain">
+          </div>
+          <div id="nrphoto-placeholder" style="font-size:12px;color:var(--muted)">📷 Click to attach a photo</div>
+        </div>
+        <input type="file" id="nrphoto-input" accept="image/*" style="display:none" onchange="handleNRPhoto(this)">
+      </div>
+
+      <div class="fgrid">
+        <div class="fg full">
+          <label class="fl">Item name *</label>
+          <input id="nr-item" class="fi" placeholder="e.g. Cetaphil face wash">
+        </div>
+        <div class="fg">
+          <label class="fl">Brand</label>
+          <input id="nr-brand" class="fi" placeholder="e.g. Cetaphil">
+        </div>
+        <div class="fg">
+          <label class="fl">Category</label>
+          <select id="nr-cat" class="fi">
+            <option value="">Choose…</option>
+            <option>Toiletries</option><option>Skincare</option><option>Sunscreen</option>
+            <option>Medications</option><option>Supplements</option><option>Vision Care</option>
+            <option>Travel Gear</option><option>Household</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">Size / description</label>
+          <input id="nr-size" class="fi" placeholder="e.g. 8 fl oz">
+        </div>
+        <div class="fg">
+          <label class="fl">Use</label>
+          <select id="nr-use" class="fi">
+            <option value="both">🏠✈️ Both</option>
+            <option value="home">🏠 Home only</option>
+            <option value="travel">✈️ Travel only</option>
+          </select>
+        </div>
+        <div class="fg full">
+          <label class="fl">Where to buy / link (optional)</label>
+          <input id="nr-link" class="fi" placeholder="e.g. Amazon link or store name">
+        </div>
+        <div class="fg full">
+          <label class="fl">Why do you need it?</label>
+          <input id="nr-reason" class="fi" placeholder="e.g. Running out of my current face wash, want to try this one">
+        </div>
+      </div>
+
+      <div style="margin-top:14px;display:flex;gap:8px">
+        <button class="btn btn-req" onclick="submitNewRequest()" style="flex:1;justify-content:center;padding:9px">📨 Submit request</button>
+        <button class="btn btn-ghost" onclick="closeNewReqModal()">Cancel</button>
       </div>
     </div>
   </div>
@@ -800,8 +899,11 @@ function renderPipeline(){
   el.innerHTML=PCOLS.map(col=>{
     const its=orders.filter(o=>o.state===col.state||(col.state==='restocked'&&o.state==='declined'));
     return `<div class="pcol"><div class="pcol-h"><div class="pcol-t">${col.label}</div><span class="pill pcol-n ${col.cls}">${its.length}</span></div><div class="pcol-b">${
-      its.length?its.map(o=>`<div class="pcard${selOId===o.id?' sel':''}" onclick="selOrd('${o.id}')"><div class="pcard-name">${o.item}</div><div class="pcard-meta">${o.brand} · Qty: ${o.qty}${o.note?' · '+o.note:''}<br>${tAgo(o.tl[0]?.ts||Date.now())}</div></div>`).join(''):'<div class="pempty">None</div>'
-    }</div></div>`;
+      its.length?its.map(o=>`<d<div class="pcard${selOId===o.id?' sel':''}" onclick="selOrd('${o.id}')" style="position:relative">
+            <div class="pcard-name">${o.item}</div>
+            <div class="pcard-meta">${o.brand} · Qty: ${o.qty}${o.note?' · '+o.note:''}<br>${tAgo(o.tl[0]?.ts||Date.now())}</div>
+            <button class="pcard-del" onclick="deleteOrder('${o.id}',event)" title="Delete">✕</button>
+          </div>
   }).join('');
   if(selOId)renderDetail(selOId);
 }
@@ -872,10 +974,27 @@ function renderDetail(id){
 
   box.innerHTML=`
     <div class="dbox-h"><span class="dbox-t">${o.item} <span class="pill ${wCls}" style="font-size:10px;vertical-align:middle">${wLbl}</span></span>
-      <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px" onclick="selOId=null;renderPipeline()">✕</button></div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-red" style="font-size:11px;padding:3px 10px" onclick="deleteOrder('${o.id}',null)">🗑 Delete</button>
+        <button class="btn btn-ghost" style="font-size:11px;padding:3px 8px" onclick="selOId=null;renderPipeline()">✕</button>
+      </div></div>
     <div class="dinfo"><div class="dinfo-name">${o.item}</div>
       <div class="chips"><span class="chip">🏷 ${o.brand}</span><span class="chip">📦 ${o.size}</span><span class="chip">📥 Qty: ${o.qty}</span>${o.note?`<span class="chip">📝 ${o.note}</span>`:''}<span class="chip">🕐 ${tAgo(o.tl[0]?.ts||Date.now())}</span></div></div>
     ${od}${form}<div class="dactions">${acts}</div>${tl}`;
+}
+
+async function deleteOrder(id, e){
+  if(e) e.stopPropagation();
+  const o = getOrd(id);
+  if(!o) return;
+  if(!confirm(`Delete order for "${o.item}"? This cannot be undone.`)) return;
+  orders = orders.filter(x => x.id !== id);
+  if(selOId === id) selOId = null;
+  await jSet(BIN_O, orders);
+  updateStats();
+  renderPipeline();
+  renderInv();
+  toast('Order deleted', o.item, 'r');
 }
 
 function defEta(){ const d=new Date(); d.setDate(d.getDate()+3); return d.toISOString().split('T')[0]; }
@@ -1067,7 +1186,7 @@ function renderCards(data,el){
       <div class="card-row"><span class="card-lbl">Home stock</span>${qcHtml(idx)}</div>
       <div class="card-row"><span class="card-lbl">Reorder at</span><span style="font-size:12px">${item.rL}</span></div>
       <div class="hr"></div>
-      <div class="card-foot">${usePill(item.use)}${statusPill(idx)}${actionBtn(idx)}</div>
+      <div class="card-foot">${usePill(item.use)}${statusPill(idx)}${actionBtn(idx)}${item.custom?`<button class="btn btn-ghost" onclick="deleteInvItem(${idx})" style="font-size:11px;padding:3px 7px;color:var(--red);border-color:var(--red)" title="Delete">🗑</button>`:''}</div>
     </div>`).join('')+'</div>';
 }
 
@@ -1090,7 +1209,7 @@ function updateStats(){
 }
 
 async function goTo(name,btn){
-  ['inv','orders','pack','gallery'].forEach(p=>{const e=document.getElementById('page-'+p);if(e)e.className='page';});
+  ['inv','orders','pack','gallery','newreq'].forEach(p=>{const e=document.getElementById('page-'+p);if(e)e.className='page';});
   document.getElementById('page-'+name).className='page on';
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
@@ -1102,6 +1221,7 @@ async function goTo(name,btn){
     buildPackSel();renderPackList();
   }
   if(name==='gallery'){ renderGallery(); }
+  if(name==='newreq'){ await loadNewRequests(); renderNewRequests(); }
 }
 
 function setView(v,btn){ view=v; document.querySelectorAll('.vb').forEach(b=>b.classList.remove('on')); btn.classList.add('on'); renderInv(); }
@@ -1304,15 +1424,25 @@ function renderGallery(){
   const el=document.getElementById('gallery-grid');if(!el)return;
   if(!GALLERY_DATA.length){el.innerHTML='<div class="empty">No photos yet. Click "Add photo & item" to get started.</div>';return;}
   el.innerHTML=GALLERY_DATA.map((g,i)=>`
-    <div class="gcard" onclick="${g.img?'openLB('+i+')':''}">
-      ${g.img
-        ? `<img src="${g.img}" alt="${g.label}" loading="lazy">`
-        : `<div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:var(--ivory);font-size:2.5rem">📦</div>`}
+    <div class="gcard" style="position:relative">
+      <div onclick="${g.img?'openLB('+i+')':''}" style="cursor:${g.img?'pointer':'default'}">
+        ${g.img
+          ? `<img src="${g.img}" alt="${g.label}" loading="lazy">`
+          : `<div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;background:var(--ivory);font-size:2.5rem">📦</div>`}
+      </div>
       <div class="gcard-label">${g.label}
         <div class="gcard-sub">${g.sub}</div>
         ${g.custom?'<div style="font-size:10px;color:var(--green);margin-top:2px;font-weight:600">Custom item</div>':''}
       </div>
+      <button onclick="deleteGalleryItem(${i},event)" title="Remove from gallery"
+        style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,.55);border:none;color:#fff;border-radius:50%;width:24px;height:24px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;opacity:0;transition:opacity .15s"
+        onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0"
+        class="del-btn">✕</button>
     </div>`).join('');
+  // Show delete buttons on touch devices
+  if('ontouchstart' in window){
+    document.querySelectorAll('.del-btn').forEach(b=>b.style.opacity='0.7');
+  }
 }
 function openLB(i){
   const g=GALLERY_DATA[i];
@@ -1321,7 +1451,301 @@ function openLB(i){
   document.getElementById('lightbox').style.display='flex';
 }
 function closeLB(){ document.getElementById('lightbox').style.display='none'; }
+
+async function deleteInvItem(idx){
+  const item = allItems()[idx];
+  if(!item||!item.custom){ toast('Only custom items can be deleted','Built-in items cannot be removed here','r'); return; }
+  if(!confirm(`Delete "${item.item}" from inventory?`)) return;
+
+  // Find in customItems and remove
+  const ciIdx = customItems.findIndex(ci=>ci.item===item.item&&ci.brand===item.brand);
+  if(ciIdx > -1) customItems.splice(ciIdx,1);
+
+  // Clean up qty
+  delete qtys[String(idx)];
+  qtys._custom = customItems;
+
+  // Also remove from gallery if it has a photo entry
+  const gIdx = GALLERY_DATA.findIndex(g=>g.label===item.item&&g.custom);
+  if(gIdx > -1){
+    GALLERY_DATA.splice(gIdx,1);
+    if(qtys._gallery) qtys._gallery = qtys._gallery.filter(g=>g.label!==item.item);
+  }
+
+  await jSet(BIN_Q, qtys);
+  renderInv(); updateStats(); renderGallery();
+  toast('Item deleted', item.item, 'r');
+}
+
+async function deleteGalleryItem(i, e){
+  e.stopPropagation();
+  const g = GALLERY_DATA[i];
+  if(!confirm(`Remove "${g.label}" from the gallery${g.custom?' and inventory':''}?`)) return;
+
+  // If it's a custom item, also remove from inventory
+  if(g.custom){
+    // Find matching custom item by name
+    const ciIdx = customItems.findIndex(ci=>ci.item===g.label);
+    if(ciIdx > -1){
+      customItems.splice(ciIdx,1);
+      qtys._custom = customItems;
+    }
+    // Remove from gallery custom photos
+    if(qtys._gallery&&Array.isArray(qtys._gallery)){
+      qtys._gallery = qtys._gallery.filter(x=>x.label!==g.label);
+    }
+  }
+
+  // Remove from GALLERY_DATA
+  GALLERY_DATA.splice(i,1);
+
+  await jSet(BIN_Q, qtys);
+  renderGallery();
+  renderInv();
+  updateStats();
+  toast('Item removed', g.label, 'r');
+}
 document.addEventListener('keydown',e=>{ if(e.key==='Escape')closeLB(); });
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NEW ITEM REQUESTS
+// newRequests: [{id,item,brand,cat,size,use,link,reason,photo,state,ts,tl[],
+//               supplier,cost,eta,tracking,deliveredQty}]
+// states: 'pending' | 'approved' | 'ordered' | 'delivered' | 'declined'
+// ═══════════════════════════════════════════════════════════════════════════════
+const BIN_NR = '6a3b0757f5f4af5e2925dc44'; // reuse orders bin with type field
+let newRequests = [];
+let nrPhotoB64 = null;
+
+function parseNewReqs(od){
+  const arr = Array.isArray(od)?od:(od&&Array.isArray(od.records)?od.records:[]);
+  return arr.filter(o=>o.type==='new_request').map(o=>({...o,tl:o.tl||[]}));
+}
+
+// Load new requests from orders bin (filtered by type)
+async function loadNewRequests(){
+  const od = await jGet(BIN_O);
+  const arr = Array.isArray(od)?od:(od&&Array.isArray(od.records)?od.records:[]);
+  newRequests = arr.filter(o=>o.type==='new_request').map(o=>({...o,tl:o.tl||[]}));
+  updateNRBadge();
+}
+
+async function saveAllOrders(){
+  // Merge regular orders + new requests into one array
+  const regularOrders = orders.filter(o=>!o.type||o.type!=='new_request');
+  await jSet(BIN_O, [...regularOrders, ...newRequests]);
+}
+
+function updateNRBadge(){
+  const pending = newRequests.filter(r=>r.state==='pending'||r.state==='approved'||r.state==='ordered').length;
+  const badge = document.getElementById('newreq-badge');
+  if(badge){ badge.textContent=pending; badge.className='nav-badge'+(pending?' on':''); }
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openNewReqModal(){
+  nrPhotoB64=null;
+  ['nr-item','nr-brand','nr-size','nr-link','nr-reason'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('nr-cat').value='';
+  document.getElementById('nr-use').value='both';
+  document.getElementById('nrphoto-preview-wrap').style.display='none';
+  document.getElementById('nrphoto-placeholder').style.display='block';
+  document.getElementById('nrphoto-input').value='';
+  document.getElementById('mo-newreq').style.display='flex';
+}
+function closeNewReqModal(){ document.getElementById('mo-newreq').style.display='none'; }
+
+function handleNRPhoto(input){
+  const file=input.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=(e)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      const MAX=500; let w=img.width,h=img.height;
+      if(w>h){if(w>MAX){h=h*MAX/w;w=MAX;}}else{if(h>MAX){w=w*MAX/h;h=MAX;}}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      nrPhotoB64=canvas.toDataURL('image/jpeg',.72);
+      document.getElementById('nrphoto-preview').src=nrPhotoB64;
+      document.getElementById('nrphoto-preview-wrap').style.display='block';
+      document.getElementById('nrphoto-placeholder').style.display='none';
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function submitNewRequest(){
+  const item  = document.getElementById('nr-item').value.trim();
+  const brand = document.getElementById('nr-brand').value.trim()||'Unknown';
+  const cat   = document.getElementById('nr-cat').value||'Household';
+  const size  = document.getElementById('nr-size').value.trim()||'—';
+  const use   = document.getElementById('nr-use').value||'both';
+  const link  = document.getElementById('nr-link').value.trim();
+  const reason= document.getElementById('nr-reason').value.trim();
+  if(!item){ toast('Please enter an item name','','r'); return; }
+
+  const id=gId();
+  const req={id,type:'new_request',item,brand,cat,size,use,link,reason,photo:nrPhotoB64||'',
+    state:'pending',ts:Date.now(),tl:[{state:'pending',ts:Date.now(),note:'Request submitted'}],
+    supplier:'',cost:'',eta:'',tracking:'',deliveredQty:1};
+  newRequests.unshift(req);
+  await saveAllOrders();
+  updateNRBadge();
+  closeNewReqModal();
+  renderNewRequests();
+
+  // Notify owner via email
+  let body=`Hi! I'd like to request a new item for the inventory.
+
+🛒 ${item}
+🏷 Brand: ${brand}
+📦 Size: ${size}
+🏠 Use: ${use}`;
+  if(link) body+=`
+🔗 Where to buy: ${link}`;
+  if(reason) body+=`
+💬 Reason: ${reason}`;
+  body+=`
+
+Thanks!`;
+  window.open('mailto:'+OWNER+'?subject='+encodeURIComponent('New item request: '+item)+'&body='+encodeURIComponent(body),'_blank');
+  toast('Request submitted!','Owner has been notified','g');
+}
+
+// ── OWNER ACTIONS ─────────────────────────────────────────────────────────────
+async function approveNewReq(id){
+  const r=newRequests.find(x=>x.id===id); if(!r)return;
+  r.state='approved'; r.tl.push({state:'approved',ts:Date.now(),note:'Approved by owner'});
+  await saveAllOrders(); renderNewRequests(); updateNRBadge();
+  window.open('mailto:'+BEN_EMAIL+'?subject='+encodeURIComponent('Request approved: '+r.item)+'&body='+encodeURIComponent('Hi Ben! Your request for '+r.item+' has been approved. I'll order it shortly!
+
+Thanks!'),'_blank');
+  toast('Request approved','Ben notified','g');
+}
+
+async function declineNewReq(id){
+  const r=newRequests.find(x=>x.id===id); if(!r)return;
+  const note=prompt('Reason for declining (optional):')||'Not needed right now.';
+  r.state='declined'; r.tl.push({state:'declined',ts:Date.now(),note});
+  await saveAllOrders(); renderNewRequests(); updateNRBadge();
+  window.open('mailto:'+BEN_EMAIL+'?subject='+encodeURIComponent('Request update: '+r.item)+'&body='+encodeURIComponent('Hi Ben! Your request for '+r.item+' was declined.
+
+'+note+'
+
+Thanks!'),'_blank');
+  toast('Request declined','Ben notified','r');
+}
+
+async function markNROrdered(id){
+  const r=newRequests.find(x=>x.id===id); if(!r)return;
+  const supplier=prompt('Where did you order from? (optional):') || '';
+  const eta=prompt('Expected arrival date? (optional):') || '';
+  r.state='ordered'; r.supplier=supplier; r.eta=eta;
+  r.tl.push({state:'ordered',ts:Date.now(),note:(supplier?'From: '+supplier:'')+(eta?' · ETA: '+eta:'')});
+  await saveAllOrders(); renderNewRequests(); updateNRBadge();
+  let body='Hi Ben! I've ordered '+r.item+'.';
+  if(supplier) body+='
+
+Ordered from: '+supplier;
+  if(eta) body+='
+Expected arrival: '+eta;
+  body+='
+
+I'll add it to the inventory when it arrives!';
+  window.open('mailto:'+BEN_EMAIL+'?subject='+encodeURIComponent('Ordered: '+r.item)+'&body='+encodeURIComponent(body),'_blank');
+  toast('Marked as ordered','Ben notified','g');
+}
+
+async function markNRDelivered(id){
+  const r=newRequests.find(x=>x.id===id); if(!r)return;
+  const qty=parseInt(prompt('How many units received?','1'))||1;
+  const rQ=parseInt(prompt('Reorder when stock drops to?','1'))||1;
+  r.state='delivered'; r.deliveredQty=qty;
+  r.tl.push({state:'delivered',ts:Date.now(),note:'Delivered · Qty: '+qty+' · Added to inventory'});
+  await saveAllOrders();
+
+  // ── Auto-add to inventory ─────────────────────────────────────────────────
+  const newItem={cat:r.cat||'Household',item:r.item,brand:r.brand,size:r.size,
+    dQ:qty,rQ,rL:'When low',mon:false,use:r.use||'both',custom:true};
+  customItems.push(newItem);
+  const newIdx=allItems().length-1;
+  qtys[String(newIdx)]=qty;
+  qtys._custom=customItems;
+
+  // ── Auto-add to gallery if has photo ─────────────────────────────────────
+  if(r.photo){
+    GALLERY_DATA.push({label:r.item,cat:r.cat,sub:r.brand+' · '+r.size,img:r.photo,custom:true});
+    if(!qtys._gallery)qtys._gallery=[];
+    qtys._gallery.push({label:r.item,cat:r.cat,sub:r.brand+' · '+r.size,img:r.photo});
+  }
+  await jSet(BIN_Q,qtys);
+
+  updateNRBadge(); renderNewRequests(); renderInv(); updateStats();
+  if(document.getElementById('page-gallery').className.includes('on')) renderGallery();
+
+  let body='Hi Ben! '+r.item+' has arrived and been added to the inventory.\nQty added: '+qty+'\n\nThanks!';
+  window.open('mailto:'+BEN_EMAIL+'?subject='+encodeURIComponent('Delivered & added: '+r.item)+'&body='+encodeURIComponent(body),'_blank');
+  toast('✓ Delivered! Added to inventory'+(r.photo?' & gallery':''),r.item,'g');
+}
+
+async function deleteNewReq(id,e){
+  if(e) e.stopPropagation();
+  const r=newRequests.find(x=>x.id===id); if(!r)return;
+  if(!confirm('Delete request for "'+r.item+'"?')) return;
+  newRequests=newRequests.filter(x=>x.id!==id);
+  await saveAllOrders(); updateNRBadge(); renderNewRequests();
+  toast('Request deleted',r.item,'r');
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+const NR_STATE={
+  pending: {label:'⏳ Pending',   cls:'p-req',  dot:'#BA7517'},
+  approved:{label:'✅ Approved',  cls:'p-ord',  dot:'#0F6E56'},
+  ordered: {label:'📦 Ordered',   cls:'p-ord',  dot:'#0F6E56'},
+  delivered:{label:'✓ Delivered', cls:'p-done', dot:'#1A6630'},
+  declined: {label:'✗ Declined',  cls:'p-dec',  dot:'#8B0000'},
+};
+
+function renderNewRequests(){
+  const el=document.getElementById('newreq-list'); if(!el)return;
+  if(!newRequests.length){
+    el.innerHTML='<div class="empty">No requests yet.<br><span style="font-size:12px">Click "+ Submit new request" to request a brand new item.</span></div>';
+    return;
+  }
+  el.innerHTML=newRequests.map(r=>{
+    const st=NR_STATE[r.state]||NR_STATE.pending;
+    let actions='';
+    if(r.state==='pending'){
+      actions=`<button class="btn btn-ok" onclick="approveNewReq('${r.id}')">✅ Approve</button>
+               <button class="btn btn-red" onclick="declineNewReq('${r.id}')">✗ Decline</button>`;
+    } else if(r.state==='approved'){
+      actions=`<button class="btn btn-blue" onclick="markNROrdered('${r.id}')">📦 Mark as ordered</button>`;
+    } else if(r.state==='ordered'){
+      actions=`<button class="btn btn-ok" onclick="markNRDelivered('${r.id}')">✓ Mark delivered & add to inventory</button>`;
+    }
+
+    return `<div class="nrcard ${r.state}">
+      <div class="nrcard-top">
+        <div>
+          <div class="nrcard-name">${r.item}</div>
+          <div class="nrcard-meta">${r.brand} · ${r.size} · ${r.use==='both'?'🏠✈️ Both':r.use==='home'?'🏠 Home':'✈️ Travel'} · ${tAgo(r.ts)}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="pill ${st.cls}">${st.label}</span>
+          <button class="btn btn-ghost" onclick="deleteNewReq('${r.id}',event)" style="font-size:11px;padding:3px 7px;color:var(--red);border-color:var(--red)">🗑</button>
+        </div>
+      </div>
+      ${r.photo?`<img src="${r.photo}" style="width:100%;max-height:160px;object-fit:contain;border-radius:8px;background:var(--ivory);margin-bottom:8px" alt="${r.item}">`:'' }
+      ${r.reason?`<div class="nrcard-note">💬 "${r.reason}"</div>`:''}
+      ${r.link?`<div style="font-size:12px;margin-top:6px">🔗 <a href="${r.link.startsWith('http')?r.link:'https://'+r.link}" target="_blank" style="color:var(--blue)">View product</a></div>`:''}
+      ${r.supplier||r.eta?`<div class="nrcard-note" style="margin-top:6px">${r.supplier?'🏪 '+r.supplier:''}${r.eta?' · 📅 ETA: '+r.eta:''}</div>`:''}
+      ${r.tl&&r.tl.length>1?`<div style="font-size:11px;color:var(--muted);margin-top:6px">${r.tl.map(t=>`<span style="margin-right:10px">${NR_STATE[t.state]?.label||t.state} ${tAgo(t.ts)}</span>`).join('')}</div>`:''}
+      ${actions?`<div class="nrcard-actions">${actions}</div>`:''}
+    </div>`;
+  }).join('');
+}
 
 function tAgo(ts){ if(!ts)return ''; const d=Date.now()-ts; if(d<60000)return 'just now'; if(d<3600000)return Math.floor(d/60000)+'m ago'; if(d<86400000)return Math.floor(d/3600000)+'h ago'; return Math.floor(d/86400000)+'d ago'; }
 
@@ -1331,6 +1755,7 @@ function tAgo(ts){ if(!ts)return ''; const d=Date.now()-ts; if(d<60000)return 'j
 renderInv();
 updateStats();
 loadAll().then(()=>{ renderInv(); updateStats(); }).catch(e=>console.warn('Sync failed',e));
+loadNewRequests();
 startPolling();
 </script>
 </body>
