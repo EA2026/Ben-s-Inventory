@@ -734,7 +734,8 @@ function parseQtys(d){
 }
 function parseOrders(d){
   const arr = Array.isArray(d)?d:(d&&Array.isArray(d.records)?d.records:[]);
-  return arr.map(o=>({...o,idx:Number(o.idx),rL:o.rL||o.reorder_label||'',tl:o.tl||[]}));
+  return arr.filter(o=>!o.type||o.type!=='new_request')
+            .map(o=>({...o,idx:Number(o.idx),rL:o.rL||o.reorder_label||'',tl:o.tl||[]}));
 }
 function parsePack(d){
   const arr = Array.isArray(d)?d:(d&&Array.isArray(d.records)?d.records:[]);
@@ -787,10 +788,19 @@ function adjQ(idx,d){
   const el=document.getElementById('qi'+idx); if(!el)return;
   const nv=Math.max(0,(parseInt(el.value)||0)+d);
   el.value=nv; styleQI(el,idx); sQ(idx,nv);
+  refreshRowStatus(idx);
 }
 function setQI(idx,el){
   const v=Math.max(0,parseInt(el.value)||0);
   el.value=v; styleQI(el,idx); sQ(idx,v);
+  refreshRowStatus(idx);
+}
+function refreshRowStatus(idx){
+  // Re-render status pill and action button for this row without full re-render
+  const statusEl=document.getElementById('st'+idx);
+  const actionEl=document.getElementById('ac'+idx);
+  if(statusEl) statusEl.innerHTML=statusPill(idx);
+  if(actionEl) actionEl.innerHTML=actionBtn(idx);
 }
 function styleQI(el,idx){
   const v=parseInt(el.value)||0,i=ITEMS[idx];
@@ -808,26 +818,32 @@ function qcHtml(idx){
 // ═══════════════════════════════════════════════════════════════════════════════
 const gId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
 function getOrd(id){ return orders.find(o=>String(o.id)===String(id)); }
-function activeOrd(idx){ return orders.find(o=>Number(o.idx)===Number(idx)&&o.state!=='restocked'&&o.state!=='declined')||null; }
+function activeOrd(idx){ return orders.find(o=>Number(o.idx)===Number(idx)&&o.state!=='restocked'&&o.state!=='declined'&&(!o.type||o.type!=='new_request'))||null; }
 function isLow(idx){ const i=allItems()[idx]; return i&&i.rQ>0&&gQ(idx)<=i.rQ; }
 function isAct(idx){ return !!activeOrd(idx); }
 
 function statusPill(idx){
-  const o=activeOrd(idx);
-  if(o) return `<span class="pill ${WF_CLS[o.state]||''}">${WF_LABEL[o.state]||o.state}</span>`;
-  const v=gQ(idx),i=ITEMS[idx];
-  if(v===0) return `<span class="pill p-low">Out of stock</span>`;
-  if(i.rQ>0&&v<=i.rQ) return `<span class="pill p-watch">Low — ${v} left</span>`;
-  return `<span class="pill p-ok">Stocked</span>`;
+  var o=activeOrd(idx);
+  if(o&&(o.state==='requested'||o.state==='ordered')){
+    return '<span class="pill '+(WF_CLS[o.state]||'')+'">'+WF_LABEL[o.state]+'</span>';
+  }
+  var v=gQ(idx);
+  var i=allItems()[idx];
+  if(!i) return '';
+  if(v===0) return '<span class="pill p-low">Out of stock</span>';
+  if(i.rQ>0&&v<=i.rQ) return '<span class="pill p-watch">Low — '+v+' left</span>';
+  return '<span class="pill p-ok">Stocked</span>';
 }
 
 function delBtn(idx){
-  return '<button class="btn btn-ghost" onclick="deleteInvItem('+idx+')" style="font-size:11px;padding:3px 8px;color:var(--red);border-color:var(--red)" title="Delete">🗑</button>';
+  return '<button class="btn btn-ghost" onclick="deleteInvItem('+idx+')" style="font-size:11px;padding:3px 8px;color:var(--red);border-color:var(--red)" title="Delete item">🗑</button>';
 }
 function actionBtn(idx){
-  const o=activeOrd(idx);
-  if(o) return `<span class="btn btn-pend" style="font-size:11px">${WF_LABEL[o.state]||o.state}</span>`;
-  return `<button class="btn btn-req" onclick="openMo(${idx})">🛒 Request restock</button>`;
+  var o=activeOrd(idx);
+  if(o&&(o.state==='requested'||o.state==='ordered')){
+    return '<span class="btn btn-pend" style="font-size:11px">'+(WF_LABEL[o.state]||o.state)+'</span>';
+  }
+  return '<button class="btn btn-req" onclick="openMo('+idx+')">🛒 Request restock</button>';
 }
 
 async function advOrd(id,state,extra={}){
@@ -1150,7 +1166,9 @@ function renderPackList(){
 // ═══════════════════════════════════════════════════════════════════════════════
 function filterItems(){
   const q=(document.getElementById('inv-q')?.value||'').toLowerCase();
+  const deleted=qtys._deleted||[];
   return allItems().map((item,idx)=>({item,idx})).filter(({item,idx})=>{
+    if(!item.custom&&deleted.includes(idx))return false; // hide deleted built-ins
     if(cat!=='All'&&item.cat!==cat)return false;
     if(sub==='low'&&!isLow(idx))return false;
     if(sub==='mon'&&!item.mon)return false;
@@ -1179,8 +1197,8 @@ function renderTable(data,el){
       <td>${usePill(item.use)}</td>
       <td>${qcHtml(idx)}</td>
       <td style="font-size:12px;color:var(--muted)">${item.rL}</td>
-      <td>${statusPill(idx)}</td>
-      <td style="display:flex;gap:5px;align-items:center">${actionBtn(idx)}${item.custom?delBtn(idx):''}</td>
+      <td id="st${idx}">${statusPill(idx)}</td>
+      <td id="ac${idx}" style="display:flex;gap:5px;align-items:center">${actionBtn(idx)}${delBtn(idx)}</td>
     </tr>`;
   });
   el.innerHTML=html+'</tbody></table></div>';
@@ -1194,7 +1212,7 @@ function renderCards(data,el){
       <div class="card-row"><span class="card-lbl">Home stock</span>${qcHtml(idx)}</div>
       <div class="card-row"><span class="card-lbl">Reorder at</span><span style="font-size:12px">${item.rL}</span></div>
       <div class="hr"></div>
-      <div class="card-foot">${usePill(item.use)}${statusPill(idx)}${actionBtn(idx)}${item.custom?delBtn(idx):''}</div>
+      <div class="card-foot">${usePill(item.use)}${statusPill(idx)}${actionBtn(idx)}${delBtn(idx)}</div>
     </div>`).join('')+'</div>';
 }
 
@@ -1202,7 +1220,8 @@ function renderCards(data,el){
 // STATS & NAVIGATION
 // ═══════════════════════════════════════════════════════════════════════════════
 function updateStats(){
-  const low=allItems().filter((_,i)=>isLow(i)).length;
+  const deleted=qtys._deleted||[];
+  const low=allItems().filter(function(item,i){ return !(!item.custom&&deleted.includes(i))&&isLow(i); }).length;
   const req=orders.filter(o=>o.state==='requested').length;
   const ord=orders.filter(o=>o.state==='ordered').length;
   const active=req+ord;
@@ -1462,17 +1481,19 @@ function closeLB(){ document.getElementById('lightbox').style.display='none'; }
 
 async function deleteInvItem(idx){
   const item = allItems()[idx];
-  if(!item||!item.custom){ toast('Only custom items can be deleted','Built-in items cannot be removed here','r'); return; }
+  if(!item){ toast('Item not found','','r'); return; }
   if(!confirm('Delete "'+item.item+'" from inventory?')) return;
 
-  customItems = customItems.filter(ci=>!(ci.item===item.item&&ci.brand===item.brand));
-  qtys._custom = customItems;
+  if(item.custom){
+    customItems = customItems.filter(function(ci){ return !(ci.item===item.item&&ci.brand===item.brand); });
+    qtys._custom = customItems;
+    for(var k in qtys){ if(!isNaN(parseInt(k))&&parseInt(k)>=ITEMS.length) delete qtys[k]; }
+    customItems.forEach(function(ci,i){ qtys[String(ITEMS.length+i)]=ci.dQ||1; });
+  } else {
+    if(!qtys._deleted) qtys._deleted=[];
+    if(!qtys._deleted.includes(idx)) qtys._deleted.push(idx);
+  }
 
-  // Remove orphaned qty keys and rebuild
-  for(var k in qtys){ if(parseInt(k)>=ITEMS.length) delete qtys[k]; }
-  customItems.forEach(function(ci,i){ qtys[String(ITEMS.length+i)]=ci.dQ||1; });
-
-  // Remove from gallery
   var gIdx = GALLERY_DATA.findIndex(function(g){ return g.label===item.item&&g.custom; });
   if(gIdx > -1){
     GALLERY_DATA.splice(gIdx,1);
@@ -1481,7 +1502,7 @@ async function deleteInvItem(idx){
 
   await jSet(BIN_Q, qtys);
   renderInv(); updateStats(); renderGallery();
-  toast('Item deleted', item.item, 'r');
+  toast('Item removed', item.item, 'r');
 }
 
 async function deleteGalleryItem(i, e){
