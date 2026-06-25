@@ -1463,21 +1463,20 @@ function closeLB(){ document.getElementById('lightbox').style.display='none'; }
 async function deleteInvItem(idx){
   const item = allItems()[idx];
   if(!item||!item.custom){ toast('Only custom items can be deleted','Built-in items cannot be removed here','r'); return; }
-  if(!confirm(`Delete "${item.item}" from inventory?`)) return;
+  if(!confirm('Delete "'+item.item+'" from inventory?')) return;
 
-  // Find in customItems and remove
-  const ciIdx = customItems.findIndex(ci=>ci.item===item.item&&ci.brand===item.brand);
-  if(ciIdx > -1) customItems.splice(ciIdx,1);
-
-  // Clean up qty
-  delete qtys[String(idx)];
+  customItems = customItems.filter(ci=>!(ci.item===item.item&&ci.brand===item.brand));
   qtys._custom = customItems;
 
-  // Also remove from gallery if it has a photo entry
-  const gIdx = GALLERY_DATA.findIndex(g=>g.label===item.item&&g.custom);
+  // Remove orphaned qty keys and rebuild
+  for(var k in qtys){ if(parseInt(k)>=ITEMS.length) delete qtys[k]; }
+  customItems.forEach(function(ci,i){ qtys[String(ITEMS.length+i)]=ci.dQ||1; });
+
+  // Remove from gallery
+  var gIdx = GALLERY_DATA.findIndex(function(g){ return g.label===item.item&&g.custom; });
   if(gIdx > -1){
     GALLERY_DATA.splice(gIdx,1);
-    if(qtys._gallery) qtys._gallery = qtys._gallery.filter(g=>g.label!==item.item);
+    if(qtys._gallery) qtys._gallery = qtys._gallery.filter(function(g){ return g.label!==item.item; });
   }
 
   await jSet(BIN_Q, qtys);
@@ -1492,16 +1491,9 @@ async function deleteGalleryItem(i, e){
 
   // If it's a custom item, also remove from inventory
   if(g.custom){
-    // Find matching custom item by name
-    const ciIdx = customItems.findIndex(ci=>ci.item===g.label);
-    if(ciIdx > -1){
-      customItems.splice(ciIdx,1);
-      qtys._custom = customItems;
-    }
-    // Remove from gallery custom photos
-    if(qtys._gallery&&Array.isArray(qtys._gallery)){
-      qtys._gallery = qtys._gallery.filter(x=>x.label!==g.label);
-    }
+    customItems = customItems.filter(ci=>ci.item!==g.label);
+    qtys._custom = customItems;
+    if(qtys._gallery) qtys._gallery = qtys._gallery.filter(x=>x.label!==g.label);
   }
 
   // Remove from GALLERY_DATA
@@ -1663,8 +1655,8 @@ async function markNRDelivered(id){
   // ── Auto-add to inventory ─────────────────────────────────────────────────
   const newItem={cat:r.cat||'Household',item:r.item,brand:r.brand,size:r.size,
     dQ:qty,rQ,rL:'When low',mon:false,use:r.use||'both',custom:true};
+  const newIdx=ITEMS.length+customItems.length; // calculate BEFORE pushing
   customItems.push(newItem);
-  const newIdx=allItems().length-1;
   qtys[String(newIdx)]=qty;
   qtys._custom=customItems;
 
