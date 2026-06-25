@@ -418,11 +418,28 @@ function App() {
   }
 
   function setOrderStatus(orderId, status) {
-    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
     const order = orders.find((o) => o.id === orderId);
-    if (order?.kind === "restock" && (status === "done" || status === "declined")) {
-      setInventory((prev) => prev.map((i) => (i.id === order.itemId ? { ...i, requested: false } : i)));
+    if (!order) return;
+
+    // If a restock order is completed, put the quantity back into home stock.
+    if (order.kind === "restock" && status === "done" && order.status !== "done" && order.itemId) {
+      setInventory((prev) =>
+        prev.map((i) =>
+          i.id === order.itemId
+            ? { ...i, homeStock: i.homeStock + (Number(order.qty) || 1), requested: false }
+            : i
+        )
+      );
     }
+
+    // If a request is declined or completed, clear the requested flag on the item.
+    if (order.kind === "restock" && (status === "done" || status === "declined") && order.itemId) {
+      setInventory((prev) =>
+        prev.map((i) => (i.id === order.itemId ? { ...i, requested: false } : i))
+      );
+    }
+
+    setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
     if (order?.kind === "new" && status === "done") {
       setOrders((prev) => prev.filter((o) => o.id !== orderId));
     }
