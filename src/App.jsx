@@ -141,7 +141,7 @@ function TopStat({ label, value }) {
 function Panel({ title, subtitle, children, right }) {
   return (
     <section style={{ borderRadius: 18, overflow: "hidden", background: "#fff", border: "1px solid #e4e9f2", boxShadow: "0 10px 30px rgba(31,43,74,.07)" }}>
-      <div style={{ background: "#22345c", color: "#fff", padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <div style={{ background: "#22345c", color: "#fff", padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
         <div>
           <div style={{ fontSize: 18, fontWeight: 900 }}>{title}</div>
           {subtitle ? <div style={{ marginTop: 4, color: "rgba(255,255,255,.55)", fontSize: 14 }}>{subtitle}</div> : null}
@@ -157,7 +157,7 @@ function Modal({ title, onClose, children }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,.55)", zIndex: 60, display: "grid", placeItems: "center", padding: 16 }} onClick={onClose}>
       <div style={{ width: "min(760px, 96vw)", maxHeight: "92vh", overflow: "auto", background: "#fff", borderRadius: 20, boxShadow: "0 30px 80px rgba(0,0,0,.25)" }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ padding: "18px 22px", borderBottom: "1px solid #e5eaf2", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+        <div style={{ padding: "18px 22px", borderBottom: "1px solid #e5eaf2", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
           <div style={{ fontSize: 18, fontWeight: 900, color: "#22345c" }}>{title}</div>
           <button onClick={onClose} style={{ border: "none", background: "#eef2f8", borderRadius: 12, padding: "8px 12px", fontWeight: 800 }}>✕</button>
         </div>
@@ -319,10 +319,10 @@ function App() {
 
   const inventoryView = (
     <div style={{ display: "grid", gap: 18 }}>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: "1 1 380px", background: "#fff", border: "1px solid #dde4ee", borderRadius: 14, padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,.04)" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: "1 1 380px", background: "#fff", border: "1px solid #dde4ee", borderRadius: 14, padding: "8px 14px", boxShadow: "0 4px 12px rgba(0,0,0,.04)" }}>
           <span style={{ fontSize: 20, opacity: 0.65 }}>🔎</span>
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." style={{ border: "none", outline: "none", width: "100%", fontSize: 16, background: "transparent" }} />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." style={{ border: "none", outline: "none", width: "100%", fontSize: 14, background: "transparent" }} />
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -332,7 +332,7 @@ function App() {
         <div style={{ display: "flex", gap: 8, marginLeft: "auto", alignItems: "center" }}>
           <Pill active={inventoryMode === "Table"} small onClick={() => setInventoryMode("Table")}>Table</Pill>
           <Pill active={inventoryMode === "Cards"} small onClick={() => setInventoryMode("Cards")}>Cards</Pill>
-          <button onClick={openAddItem} style={{ background: "#1f7a3f", color: "#fff", border: "none", borderRadius: 12, padding: "11px 16px", fontWeight: 900, fontSize: 14, boxShadow: "0 4px 10px rgba(31,122,63,.18)" }}>+ Add item</button>
+          <button onClick={openAddItem} style={{ background: "#1f7a3f", color: "#fff", border: "none", borderRadius: 12, padding: "8px 14px", fontWeight: 900, fontSize: 13, boxShadow: "0 4px 10px rgba(31,122,63,.18)" }}>+ Add item</button>
         </div>
       </div>
 
@@ -417,7 +417,7 @@ function App() {
 
   const ordersView = (
     <div style={{ display: "grid", gap: 18 }}>
-      <section style={{ borderRadius: 18, background: "#22345c", color: "#fff", padding: 18, display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center" }}>
+      <section style={{ borderRadius: 18, background: "#22345c", color: "#fff", padding: 18, display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center" }}>
         <div>
           <div style={{ fontSize: 18, fontWeight: 900 }}>Order management</div>
           <div style={{ marginTop: 4, color: "rgba(255,255,255,.55)" }}>Approve · Track · Restock</div>
@@ -516,7 +516,7 @@ function App() {
             <div style={{ background: "#22345c", color: "#fff", padding: "12px 16px", fontWeight: 900 }}>What's packed</div>
             <div style={{ padding: 18 }}>
               {packedItems.length ? packedItems.map((item) => (
-                <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, padding: "12px 0", borderBottom: "1px solid #edf1f5" }}>
+                <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, padding: "12px 0", borderBottom: "1px solid #edf1f5" }}>
                   <div>
                     <div style={{ fontWeight: 900 }}>{item.item}</div>
                     <div style={{ color: "#6b7280", fontSize: 14 }}>{item.brand} · Home {item.homeStock} · Travel {item.travelStock}</div>
@@ -562,7 +562,7 @@ function App() {
     <div style={{ display: "grid", gap: 18 }}>
       <Panel title="New item requests" subtitle="Request a brand new item · Owner approves · Added to inventory on delivery" right={<button onClick={addNewRequest} style={{ background: "#1f7a3f", color: "#fff", border: "none", borderRadius: 12, padding: "10px 16px", fontWeight: 900 }}>+ Submit new request</button>}>
         <div style={{ padding: 18, display: "grid", gap: 18 }}>
-          <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(2, minmax(0,1fr))" }}>
+          <div style={{ display: "grid", gap: 8, gridTemplateColumns: "repeat(2, minmax(0,1fr))" }}>
             <input value={newRequest.item} onChange={(e) => setNewRequest((p) => ({ ...p, item: e.target.value }))} placeholder="Item name" style={{ border: "1px solid #dfe5ee", borderRadius: 12, padding: 12 }} />
             <input value={newRequest.brand} onChange={(e) => setNewRequest((p) => ({ ...p, brand: e.target.value }))} placeholder="Brand" style={{ border: "1px solid #dfe5ee", borderRadius: 12, padding: 12 }} />
             <select value={newRequest.category} onChange={(e) => setNewRequest((p) => ({ ...p, category: e.target.value }))} style={{ border: "1px solid #dfe5ee", borderRadius: 12, padding: 12 }}>
@@ -578,7 +578,7 @@ function App() {
             <div style={{ background: "#22345c", color: "#fff", padding: "12px 16px", fontWeight: 900 }}>Pending requests</div>
             <div style={{ padding: 18 }}>
               {orders.filter((o) => o.kind === "new" && o.status !== "done" && o.status !== "declined").length ? orders.filter((o) => o.kind === "new" && o.status !== "done" && o.status !== "declined").map((o) => (
-                <div key={o.id} style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", border: "1px solid #e5ebf2", borderRadius: 12, padding: 12, marginBottom: 10 }}>
+                <div key={o.id} style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center", border: "1px solid #e5ebf2", borderRadius: 12, padding: 12, marginBottom: 10 }}>
                   <div>
                     <div style={{ fontWeight: 900 }}>{o.item}</div>
                     <div style={{ color: "#6b7280", fontSize: 14 }}>{o.brand} · {o.category} · Qty {o.qty}</div>
