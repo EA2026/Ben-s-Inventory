@@ -100,6 +100,11 @@ tr:hover td{background:#fafafa;}
 .plih b{display:block;font-size:15px;font-weight:700;color:var(--text);}
 .ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:10px;}
 .gc{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;position:relative;}
+.gc-btns{position:absolute;top:0;right:0;display:flex;gap:4px;padding:6px;opacity:0;transition:opacity .2s;background:linear-gradient(135deg,rgba(0,0,0,.35) 0%,transparent 60%);}
+.gc:hover .gc-btns{opacity:1;}
+.gcbtn{border:none;color:#fff;border-radius:6px;width:28px;height:28px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.gcbtn-edit{background:rgba(27,42,74,.85);}
+.gcbtn-del{background:rgba(139,0,0,.85);}
 .gcbtn{position:absolute;top:6px;border:none;color:#fff;border-radius:50%;width:26px;height:26px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .2s;}
 .gcbtn-edit{right:36px;background:rgba(27,42,74,.85);}
 .gcbtn-del{right:6px;background:rgba(139,0,0,.85);}
@@ -443,7 +448,7 @@ function aOrd(i){return orders.find(o=>Number(o.idx)===Number(i)&&(o.state==='re
 const gId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
 
 function pQ(d){if(!d||typeof d!=='object'||Array.isArray(d)||d.init)return{};const o={};Object.entries(d).forEach(([k,v])=>{if(k[0]!=='_')o[String(k)]=Number(v);});return o;}
-function pO(d){const a=Array.isArray(d)?d:(d?.records||[]);return a.filter(o=>o&&o.item&&!o.type).map(o=>({...o,idx:Number(o.idx),tl:o.tl||[]}));}
+function pO(d){const a=Array.isArray(d)?d:(d?.records||[]);return a.filter(o=>o&&o.item&&o.state&&o.type!=='new_request').map(o=>({...o,idx:Number(o.idx),tl:o.tl||[]}));}
 function pP(d){const a=Array.isArray(d)?d:(d?.records||[]);return a.filter(p=>p&&!p.init&&p.item&&p.idx!==undefined).map(p=>({...p,idx:Number(p.idx)}));}
 
 async function load(){
@@ -452,7 +457,8 @@ async function load(){
   tripName=td&&!td.init?td.name||'':'';
   custom=Array.isArray(qd?._custom)?qd._custom:[];
   const bg=Array.isArray(qd?._gallery)?qd._gallery:[];
-  galData=[...GDEFS,...bg];
+  var hidden=Array.isArray(qd?._hidden_gallery)?qd._hidden_gallery:[];
+  galData=[...GDEFS.filter(function(g){return !hidden.includes(g.label);}),...bg];
   ph={q:JSON.stringify(qd),o:JSON.stringify(od),p:JSON.stringify(pd),t:JSON.stringify(td)};
   sync();
 }
@@ -464,7 +470,8 @@ function poll(){
     const[qd,od,pd,td]=await Promise.all([jG(BQ),jG(BO),jG(BP),jG(BT)]);
     const qs=JSON.stringify(qd),os=JSON.stringify(od),ps=JSON.stringify(pd),ts=JSON.stringify(td);
     let ch=false;
-    if(qs!==ph.q){ph.q=qs;qtys=pQ(qd);custom=Array.isArray(qd?._custom)?qd._custom:[];const bg=Array.isArray(qd?._gallery)?qd._gallery:[];galData=[...GDEFS,...bg];ch=true;}
+    if(qs!==ph.q){ph.q=qs;qtys=pQ(qd);custom=Array.isArray(qd?._custom)?qd._custom:[];const bg=Array.isArray(qd?._gallery)?qd._gallery:[];var hidden=Array.isArray(qd?._hidden_gallery)?qd._hidden_gallery:[];
+  galData=[...GDEFS.filter(function(g){return !hidden.includes(g.label);}),...bg];ch=true;}
     if(os!==ph.o){ph.o=os;orders=pO(od);ch=true;}
     if(ps!==ph.p){ph.p=ps;packLog=pP(pd);ch=true;}
     if(ts!==ph.t){ph.t=ts;if(td&&!td.init)tripName=td.name||'';ch=true;}
@@ -564,7 +571,7 @@ function updRP(){if(rIdx===null)return;document.getElementById('rprev').innerHTM
 async function logReq(){
   const si=rIdx,q=parseInt(document.getElementById('rqty')?.value||1),n=(document.getElementById('rnote')?.value||'').trim(),x=all()[si];
   orders=orders.filter(o=>Number(o.idx)!==Number(si)||o.state==='restocked'||o.state==='declined');
-  orders.unshift({id:gId(),idx:si,item:x.item,brand:x.brand,size:x.size,rL:x.rL,qty:q,note:n,state:'requested',supplier:'',cost:'',eta:'',tracking:'',tl:[{state:'requested',ts:Date.now()}]});
+  orders.unshift({id:gId(),idx:si,item:x.item,brand:x.brand,size:x.size,rL:x.rL,qty:q,note:n,state:'requested',supplier:'',cost:'',eta:'',tracking:'',tl:[{state:'requested',ts:Date.now()}]});// no type field - keeps pO filter working
   await jS(BO,orders);upStats();renderInv();
 }
 async function sendT(){if(rIdx===null)return;const m=bMsg();try{await navigator.clipboard.writeText(m);}catch(e){const t=document.createElement('textarea');t.value=m;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);}window.open('https://teams.microsoft.com/l/chat/0/0?users='+encodeURIComponent(OWNER),'_blank');await logReq();cmo('moreq');toast('Copied & Teams opening','Paste and send!','b');}
@@ -707,24 +714,28 @@ function handlePic(inp){const f=inp.files[0];if(!f)return;const r=new FileReader
 async function saveGpic(){const lb=document.getElementById('glabel').value.trim();if(!lb){toast('Enter a label','','r');return;}const br=document.getElementById('gbrand').value.trim(),sz=document.getElementById('gsize').value.trim(),sub=br+(sz?' · '+sz:'');const e={label:lb,sub,img:picB64||'',custom:true};galData.push(e);if(!qtys._gallery)qtys._gallery=[];qtys._gallery.push(e);await jS(BQ,qtys);cmo('mogal');renderGal();toast('Photo added',lb,'g');}
 async function delGpic(i,e){
   e.stopPropagation();
-  const vis=galData.filter(g=>g.img&&!g.img.includes('PLACEHOLDER'));
-  const g=vis[i];if(!g)return;
-  if(!confirm('Remove "'+g.label+'"?'))return;
-  galData=galData.filter(function(x){return x.label!==g.label||x.builtin;});
-  if(qtys._gallery)qtys._gallery=qtys._gallery.filter(function(x){return x.label!==g.label;});
+  var vis=galData.filter(function(g){return g.img&&!g.img.includes('PLACEHOLDER');});
+  var g=vis[i];if(!g)return;
+  if(!confirm('Remove "'+g.label+'" from gallery?'))return;
+  galData=galData.filter(function(x){return x!==g;});
+  if(g.custom&&qtys._gallery)qtys._gallery=qtys._gallery.filter(function(x){return x.label!==g.label;});
+  if(g.builtin&&!qtys._hidden_gallery)qtys._hidden_gallery=[];
+  if(g.builtin)qtys._hidden_gallery.push(g.label);
   await jS(BQ,qtys);renderGal();toast('Photo removed',g.label,'r');
 }
 function renderGal(){
-  const el=document.getElementById('ggrid');if(!el)return;
-  const vis=galData.filter(g=>g.img&&!g.img.includes('PLACEHOLDER'));
+  var el=document.getElementById('ggrid');if(!el)return;
+  var vis=galData.filter(function(g){return g.img&&!g.img.includes('PLACEHOLDER');});
   if(!vis.length){el.innerHTML='<div class="empty">No photos yet. Click "Add photo" to get started.</div>';return;}
   el.innerHTML=vis.map(function(g,i){
-    var delBtn=g.builtin?'':'<button onclick="delGpic('+i+',event)" class="gcbtn gcbtn-del" title="Delete">✕</button>';
     return '<div class="gc">'
       +'<img src="'+g.img+'" alt="'+g.label+'" loading="lazy" onclick="openLB('+i+')">'
       +'<div class="gcl"><div class="gcn">'+g.label+'</div><div class="gcs">'+(g.sub||'')+'</div></div>'
-      +'<button onclick="editGpic('+i+',event)" class="gcbtn gcbtn-edit" title="Edit">✏️</button>'
-      +delBtn+'</div>';
+      +'<div class="gc-btns">'
+        +'<button onclick="editGpic('+i+',event)" class="gcbtn gcbtn-edit" title="Edit label">✏️</button>'
+        +'<button onclick="delGpic('+i+',event)" class="gcbtn gcbtn-del" title="Delete photo">🗑</button>'
+      +'</div>'
+      +'</div>';
   }).join('');
 }
 function openLB(i){var vis=galData.filter(function(x){return x.img&&!x.img.includes('PLACEHOLDER');});var g=vis[i];if(!g)return;document.getElementById('lbimg').src=g.img;document.getElementById('lblbl').textContent=g.label+(g.sub?' · '+g.sub:'');document.getElementById('lb').style.display='flex';}
@@ -740,7 +751,7 @@ async function go(name,btn){
   if(name==='inv'){renderInv();upStats();}
   if(name==='orders'){renderOrders();upStats();}
   if(name==='pack'){const tn=document.getElementById('tname');if(tn)tn.value=tripName;bPS();renderPL();}
-  if(name==='gallery'){renderGal();if('ontouchstart' in window)setTimeout(()=>document.querySelectorAll('.gcbtn').forEach(b=>b.style.opacity='0.8'),100);}
+  if(name==='gallery'){renderGal();if('ontouchstart' in window)setTimeout(function(){document.querySelectorAll('.gc-btns').forEach(function(b){b.style.opacity='1';});},100);}
 }
 function upStats(){
   const del=Array.isArray(qtys._deleted)?qtys._deleted:[];
