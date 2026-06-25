@@ -397,11 +397,33 @@ tr:hover td{background:#fafafa;}
 <script>
 const OWNER='assistant@sestante.com';
 const BEN='assistant@sestante.com';
-const JK='$2a$10$TfKgxZpVXFA9hoMqR2QDPu6lTNHYTF2HjMDukoUFhFy0i.n91zyca';
-const BQ='6a3b073ef5f4af5e2925dbcf',BO='6a3b0757f5f4af5e2925dc44',BP='6a3b0779da38895dfef44eca',BT='6a3b0798da38895dfef44f4c';
-const JH={'Content-Type':'application/json','X-Master-Key':JK,'X-Bin-Versioning':'false'};
-async function jG(b){try{const r=await fetch('https://api.jsonbin.io/v3/b/'+b+'/latest',{headers:{'X-Master-Key':JK}});return r.ok?(await r.json()).record:null;}catch(e){return null;}}
-async function jS(b,d){try{await fetch('https://api.jsonbin.io/v3/b/'+b,{method:'PUT',headers:JH,body:JSON.stringify(d)});}catch(e){}}
+const SB_URL='https://gagpdvfetysqsejytxbi.supabase.co';
+const SB_KEY='sb_publishable_X06wrpaGXyKeONG3Un4I7w_HpnNF-BW';
+const SB_H={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=minimal'};
+// ── SUPABASE HELPERS ──────────────────────────────────────────────────────────
+async function sbGet(table){
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/'+table+'?select=*',{headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+    return r.ok?await r.json():null;
+  }catch(e){return null;}
+}
+async function sbUpsert(table,data){
+  try{
+    await fetch(SB_URL+'/rest/v1/'+table,{method:'POST',headers:{...SB_H,'Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(data)});
+  }catch(e){console.warn('sbUpsert failed',table,e);}
+}
+async function sbDelete(table,col,val){
+  try{
+    await fetch(SB_URL+'/rest/v1/'+table+'?'+col+'=eq.'+encodeURIComponent(val),{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+  }catch(e){}
+}
+async function sbDeleteAll(table){
+  try{
+    await fetch(SB_URL+'/rest/v1/'+table+'?id=gte.0',{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}});
+  }catch(e){}
+}
+// jS replaced by Supabase-specific functions
+
 
 const ITEMS=[
   {cat:'Toiletries',item:'Razor blades',brand:'Gillette',size:'2-pack',dQ:4,rQ:2,rL:'2 packs left',mon:true,use:'both'},
@@ -441,6 +463,15 @@ let qtys={},orders=[],packLog=[],tripName='',galData=[],custom=[];
 let ph={q:'',o:'',p:'',t:''};
 let rIdx=null,apId=null,rsId=null,picB64=null,iFilter='all',iCat='All';
 
+// localStorage helpers for fast local cache
+function lSave(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
+function lLoad(key,def){try{const v=localStorage.getItem(key);return v?JSON.parse(v):def;}catch(e){return def;}}
+
+// Load from localStorage immediately on startup
+orders=lLoad('inv_orders',[]);
+qtys=lLoad('inv_qtys',{});
+packLog=lLoad('inv_pack',[]);
+
 function gQ(i){const v=qtys[String(i)];return v!==undefined?Number(v):all()[i]?.dQ||0;}
 function all(){return[...ITEMS,...custom];}
 function isLow(i){const x=all()[i];return x&&x.rQ>0&&gQ(i)<=x.rQ;}
@@ -448,34 +479,97 @@ function aOrd(i){return orders.find(o=>Number(o.idx)===Number(i)&&(o.state==='re
 const gId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2);
 
 function pQ(d){if(!d||typeof d!=='object'||Array.isArray(d)||d.init)return{};const o={};Object.entries(d).forEach(([k,v])=>{if(k[0]!=='_')o[String(k)]=Number(v);});return o;}
-function pO(d){const a=Array.isArray(d)?d:(d?.records||[]);return a.filter(o=>o&&o.item&&o.state&&o.type!=='new_request').map(o=>({...o,idx:Number(o.idx),tl:o.tl||[]}));}
+function pO(d){if(!d)return[];const a=Array.isArray(d)?d:(Array.isArray(d.records)?d.records:[]);return a.filter(o=>o&&o.item&&o.state).map(o=>({...o,idx:Number(o.idx),tl:o.tl||[]}));}
 function pP(d){const a=Array.isArray(d)?d:(d?.records||[]);return a.filter(p=>p&&!p.init&&p.item&&p.idx!==undefined).map(p=>({...p,idx:Number(p.idx)}));}
 
 async function load(){
-  const[qd,od,pd,td]=await Promise.all([jG(BQ),jG(BO),jG(BP),jG(BT)]);
-  qtys=pQ(qd);orders=pO(od);packLog=pP(pd);
-  tripName=td&&!td.init?td.name||'':'';
-  custom=Array.isArray(qd?._custom)?qd._custom:[];
-  const bg=Array.isArray(qd?._gallery)?qd._gallery:[];
-  var hidden=Array.isArray(qd?._hidden_gallery)?qd._hidden_gallery:[];
-  galData=[...GDEFS.filter(function(g){return !hidden.includes(g.label);}),...bg];
-  ph={q:JSON.stringify(qd),o:JSON.stringify(od),p:JSON.stringify(pd),t:JSON.stringify(td)};
-  sync();
+  // Load from localStorage first (instant)
+  var lsQ=lLoad('inv_qtys',null);
+  var lsO=lLoad('inv_orders',[]);
+  var lsP=lLoad('inv_pack',[]);
+  if(lsQ)qtys=lsQ;
+  orders=lsO;
+  packLog=lsP;
+  tripName=lLoad('inv_trip','');
+  custom=lLoad('inv_custom',[]);
+
+  // Then load from Supabase (authoritative source)
+  try{
+    const[qRows,oRows,pRows,tRows]=await Promise.all([
+      sbGet('quantities'),sbGet('orders'),sbGet('pack_log'),sbGet('trip')
+    ]);
+
+    // Quantities
+    if(qRows&&qRows.length){
+      var newQ={};
+      qRows.forEach(function(r){
+        if(r.key&&r.key.startsWith('_'))newQ[r.key]=r.val_json?JSON.parse(r.val_json):null;
+        else if(r.idx!==undefined)newQ[String(r.idx)]=Number(r.qty);
+      });
+      // Custom items and gallery stored as special rows
+      var customRow=qRows.find(function(r){return r.key==='_custom';});
+      var galleryRow=qRows.find(function(r){return r.key==='_gallery';});
+      var hiddenRow=qRows.find(function(r){return r.key==='_hidden';});
+      if(customRow&&customRow.val_json){custom=JSON.parse(customRow.val_json);lSave('inv_custom',custom);}
+      if(galleryRow&&galleryRow.val_json){
+        var bg=JSON.parse(galleryRow.val_json);
+        var hidden=hiddenRow&&hiddenRow.val_json?JSON.parse(hiddenRow.val_json):[];
+        galData=[...GDEFS.filter(function(g){return !hidden.includes(g.label);}),...bg];
+      }
+      // Only numeric keys are qtys
+      Object.keys(newQ).filter(function(k){return !isNaN(parseInt(k));}).forEach(function(k){newQ[k]=newQ[k];});
+      qtys=Object.fromEntries(Object.entries(newQ).filter(function(e){return !isNaN(parseInt(e[0]));}));
+      lSave('inv_qtys',qtys);
+    }
+
+    // Orders
+    if(oRows){
+      var sbOrders=oRows.filter(function(o){return o.item&&o.state;}).map(function(o){
+        return {...o,idx:Number(o.idx),tl:o.timeline||o.tl||[]};
+      });
+      if(sbOrders.length>=orders.length){orders=sbOrders;lSave('inv_orders',orders);}
+    }
+
+    // Pack log
+    if(pRows){
+      var sbPack=pRows.filter(function(p){return p.item&&p.idx!==undefined;}).map(function(p){
+        return {...p,idx:Number(p.idx)};
+      });
+      if(sbPack.length>0||packLog.length===0){packLog=sbPack;lSave('inv_pack',packLog);}
+    }
+
+    // Trip name
+    if(tRows&&tRows.length){tripName=tRows[0].name||'';lSave('inv_trip',tripName);}
+    sync();
+  }catch(e){
+    console.warn('Supabase load failed, using localStorage:',e);
+  }
 }
 
 function sync(){const el=document.getElementById('sync');el.classList.add('on');setTimeout(()=>el.classList.remove('on'),1200);}
 
 function poll(){
-  setInterval(async()=>{
-    const[qd,od,pd,td]=await Promise.all([jG(BQ),jG(BO),jG(BP),jG(BT)]);
-    const qs=JSON.stringify(qd),os=JSON.stringify(od),ps=JSON.stringify(pd),ts=JSON.stringify(td);
-    let ch=false;
-    if(qs!==ph.q){ph.q=qs;qtys=pQ(qd);custom=Array.isArray(qd?._custom)?qd._custom:[];const bg=Array.isArray(qd?._gallery)?qd._gallery:[];var hidden=Array.isArray(qd?._hidden_gallery)?qd._hidden_gallery:[];
-  galData=[...GDEFS.filter(function(g){return !hidden.includes(g.label);}),...bg];ch=true;}
-    if(os!==ph.o){ph.o=os;orders=pO(od);ch=true;}
-    if(ps!==ph.p){ph.p=ps;packLog=pP(pd);ch=true;}
-    if(ts!==ph.t){ph.t=ts;if(td&&!td.init)tripName=td.name||'';ch=true;}
-    if(ch){sync();upStats();rPage();}
+  // Poll every 10s for changes from other devices
+  setInterval(async function(){
+    try{
+      const[qRows,oRows,pRows,tRows]=await Promise.all([sbGet('quantities'),sbGet('orders'),sbGet('pack_log'),sbGet('trip')]);
+      var changed=false;
+      if(oRows){
+        var sbO=oRows.filter(function(o){return o.item&&o.state;}).map(function(o){return {...o,idx:Number(o.idx),tl:o.timeline||[]};});
+        if(JSON.stringify(sbO)!==JSON.stringify(orders)){orders=sbO;lSave('inv_orders',orders);changed=true;}
+      }
+      if(qRows){
+        var newQ={};
+        qRows.filter(function(r){return r.idx!==undefined;}).forEach(function(r){newQ[String(r.idx)]=Number(r.qty);});
+        if(JSON.stringify(newQ)!==JSON.stringify(qtys)){qtys=newQ;lSave('inv_qtys',qtys);changed=true;}
+      }
+      if(pRows){
+        var sbP=pRows.filter(function(p){return p.item;}).map(function(p){return {...p,idx:Number(p.idx)};});
+        if(JSON.stringify(sbP)!==JSON.stringify(packLog)){packLog=sbP;lSave('inv_pack',packLog);changed=true;}
+      }
+      if(tRows&&tRows.length&&tRows[0].name!==tripName){tripName=tRows[0].name||'';lSave('inv_trip',tripName);changed=true;}
+      if(changed){sync();upStats();rPage();}
+    }catch(e){}
   },10000);
 }
 
@@ -487,20 +581,11 @@ function rPage(){
 }
 
 // QTY
-async function sQ(i,v){qtys[String(i)]=Math.max(0,v);upStats();await jS(BQ,qtys);rRow(i);}
-function adjQ(i,d){const el=document.getElementById('qi'+i);if(!el)return;const nv=Math.max(0,(parseInt(el.value)||0)+d);el.value=nv;stQ(el,i);sQ(i,nv);}
-function setQI(i,el){const v=Math.max(0,parseInt(el.value)||0);el.value=v;stQ(el,i);sQ(i,v);}
-function stQ(el,i){const v=parseInt(el.value)||0,x=all()[i];el.classList.remove('low','warn','ok');el.classList.add(v===0?'low':(x?.rQ>0&&v<=x.rQ?'warn':'ok'));}
-function qH(i){const v=gQ(i),x=all()[i];const c=v===0?'low':(x?.rQ>0&&v<=x.rQ?'warn':'ok');return '<div class="qc"><button class="qb" onclick="adjQ('+i+',-1)">−</button><input class="qi '+c+'" type="number" min="0" value="'+v+'" id="qi'+i+'" onchange="setQI('+i+',this)" oninput="setQI('+i+',this)"><button class="qb" onclick="adjQ('+i+',1)">+</button></div>';}
-function rRow(i){const s=document.getElementById('st'+i),a=document.getElementById('ac'+i),q=document.getElementById('qi'+i);if(s)s.innerHTML=stPill(i);if(a)a.innerHTML=actCell(i);if(q)stQ(q,i);}
-
-function stPill(i){
-  const o=aOrd(i);
-  if(o)return '<span class="pill '+(o.state==='requested'?'p-req':'p-ord')+'">'+(o.state==='requested'?'⏳ Requested':'📦 On order')+'</span>';
-  const v=gQ(i),x=all()[i];if(!x)return'';
-  if(v===0)return'<span class="pill p-low">Out of stock</span>';
-  if(x.rQ>0&&v<=x.rQ)return'<span class="pill p-watch">Low — '+v+' left</span>';
-  return'<span class="pill p-ok">Stocked</span>';
+async function sQ(i,v){
+  v=Math.max(0,v);qtys[String(i)]=v;
+  lSave('inv_qtys',qtys);
+  upStats();rRow(i);
+  await sbUpsert('quantities',{idx:i,qty:v});
 }
 function uPill(u){if(u==='home')return'<span class="pill" style="background:#F0F0F0;color:#3A3A3A;font-size:10px">🏠 Home</span>';if(u==='travel')return'<span class="pill" style="background:#EEE8FA;color:#3A1B6B;font-size:10px">✈️ Travel</span>';return'<span class="pill" style="background:var(--bbg);color:var(--blue);font-size:10px">🏠✈️ Both</span>';}
 function actCell(i){const o=aOrd(i);if(o&&o.state==='requested')return'<span class="btn bpend bsm">⏳ Pending</span>';if(o&&o.state==='ordered')return'<span class="btn bsm" style="background:var(--gbg);color:var(--green)">📦 Ordered</span>';return'<button class="btn bt bsm" onclick="openReq('+i+')">🛒 Request restock</button>';}
@@ -554,13 +639,13 @@ async function saveItem(){
   const ni=ITEMS.length+custom.length;
   custom.push({cat,item,brand:document.getElementById('abrand').value.trim()||'Unknown',size:document.getElementById('asize').value.trim()||'—',dQ:parseInt(document.getElementById('aqty').value)||0,rQ:parseInt(document.getElementById('arq').value)||0,rL:document.getElementById('arl').value.trim()||'When low',mon:false,use:document.getElementById('ause').value||'both',custom:true});
   qtys[String(ni)]=parseInt(document.getElementById('aqty').value)||0;qtys._custom=custom;
-  await jS(BQ,qtys);cmo('moadd');renderInv();upStats();toast('Item added',item,'g');
+  lSave('inv_qtys',qtys);lSave('inv_custom',custom);await Promise.all([sbUpsert('quantities',{key:'_custom',val_json:JSON.stringify(custom)}),sbUpsert('quantities',{idx:ni,qty:parseInt(document.getElementById('aqty').value)||0})]);cmo('moadd');renderInv();upStats();toast('Item added',item,'g');
 }
 async function delItem(i){
   const x=all()[i];if(!x)return;if(!confirm('Remove "'+x.item+'"?'))return;
   if(x.custom){custom=custom.filter(c=>!(c.item===x.item&&c.brand===x.brand));qtys._custom=custom;for(var k in qtys){if(!isNaN(parseInt(k))&&parseInt(k)>=ITEMS.length)delete qtys[k];}custom.forEach((c,j)=>{qtys[String(ITEMS.length+j)]=gQ(ITEMS.length+j);});}
   else{if(!Array.isArray(qtys._deleted))qtys._deleted=[];if(!qtys._deleted.includes(i))qtys._deleted.push(i);}
-  await jS(BQ,qtys);renderInv();upStats();toast('Item removed',x.item,'r');
+  lSave('inv_qtys',qtys);lSave('inv_custom',custom);renderInv();upStats();await sbUpsert('quantities',{key:'_custom',val_json:JSON.stringify(custom)});toast('Item removed',x.item,'r');
 }
 
 // REQUEST
@@ -570,9 +655,13 @@ function bMsg(){const x=all()[rIdx];if(!x)return'';const q=parseInt(document.get
 function updRP(){if(rIdx===null)return;document.getElementById('rprev').innerHTML=bMsg().replace(/\n/g,'<br>');}
 async function logReq(){
   const si=rIdx,q=parseInt(document.getElementById('rqty')?.value||1),n=(document.getElementById('rnote')?.value||'').trim(),x=all()[si];
+  const newOrd={id:gId(),idx:si,item:x.item,brand:x.brand,size:x.size,rL:x.rL,qty:q,note:n||'',state:'requested',supplier:'',cost:'',eta:'',tracking:'',timeline:[{state:'requested',ts:Date.now()}]};
+  newOrd.tl=newOrd.timeline;
   orders=orders.filter(o=>Number(o.idx)!==Number(si)||o.state==='restocked'||o.state==='declined');
-  orders.unshift({id:gId(),idx:si,item:x.item,brand:x.brand,size:x.size,rL:x.rL,qty:q,note:n,state:'requested',supplier:'',cost:'',eta:'',tracking:'',tl:[{state:'requested',ts:Date.now()}]});// no type field - keeps pO filter working
-  await jS(BO,orders);upStats();renderInv();
+  orders.unshift(newOrd);
+  lSave('inv_orders',orders);
+  upStats();renderInv();
+  await sbUpsert('orders',{id:newOrd.id,idx:si,item:newOrd.item,brand:newOrd.brand,size:newOrd.size,reorder_label:newOrd.rL,qty:q,note:newOrd.note,state:'requested',supplier:'',cost:'',eta:'',tracking:'',timeline:newOrd.timeline});
 }
 async function sendT(){if(rIdx===null)return;const m=bMsg();try{await navigator.clipboard.writeText(m);}catch(e){const t=document.createElement('textarea');t.value=m;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);}window.open('https://teams.microsoft.com/l/chat/0/0?users='+encodeURIComponent(OWNER),'_blank');await logReq();cmo('moreq');toast('Copied & Teams opening','Paste and send!','b');}
 async function sendE(){if(rIdx===null)return;const x=all()[rIdx];window.open('mailto:'+OWNER+'?subject='+encodeURIComponent('Restock: '+x.item)+'&body='+encodeURIComponent(bMsg()),'_blank');await logReq();cmo('moreq');toast('Email opened','','b');}
@@ -604,12 +693,15 @@ function openAp(id){apId=id;const o=orders.find(x=>x.id===id);if(!o)return;docum
 async function doAp(){
   const o=orders.find(x=>x.id===apId);if(!o)return;
   const sup=document.getElementById('apsup').value.trim(),cost=document.getElementById('apcost').value.trim(),eta=document.getElementById('apeta').value,track=document.getElementById('aptrack').value.trim(),note=document.getElementById('apnote').value.trim();
-  Object.assign(o,{state:'ordered',supplier:sup,cost,eta,tracking:track});o.tl.push({state:'ordered',ts:Date.now()});
-  await jS(BO,orders);cmo('moap');renderOrders();upStats();renderInv();
+  Object.assign(o,{state:'ordered',supplier:sup,cost,eta,tracking:track});
+  if(!o.tl)o.tl=[];o.tl.push({state:'ordered',ts:Date.now()});
+  lSave('inv_orders',orders);
+  cmo('moap');renderOrders();upStats();renderInv();
+  await sbUpsert('orders',{id:o.id,idx:o.idx,item:o.item,brand:o.brand,size:o.size,reorder_label:o.rL||'',qty:o.qty,note:o.note||'',state:'ordered',supplier:sup,cost,eta,tracking:track,timeline:o.tl});
   window.open('mailto:'+BEN+'?subject='+encodeURIComponent('Order placed: '+o.item)+'&body='+encodeURIComponent('Hi Ben! Your request for '+o.item+' is approved.'+(note?'\n\n'+note:'\n\nI will order it shortly.')+(eta?'\n\nExpected: '+eta:'')+(track?'\nTracking: '+track:'')+'\n\nThanks!'),'_blank');
   toast('Order approved','Ben notified','g');
 }
-async function qDec(id){const o=orders.find(x=>x.id===id);if(!o)return;if(!confirm('Decline request for "'+o.item+'"?'))return;o.state='declined';o.tl.push({state:'declined',ts:Date.now()});await jS(BO,orders);renderOrders();upStats();renderInv();window.open('mailto:'+BEN+'?subject='+encodeURIComponent('Restock update: '+o.item)+'&body='+encodeURIComponent('Hi Ben! Your request for '+o.item+' was declined.\n\nNot needed right now.\n\nThanks!'),'_blank');toast('Declined','Ben notified','r');}
+async function qDec(id){const o=orders.find(x=>x.id===id);if(!o)return;if(!confirm('Decline request for "'+o.item+'"?'))return;o.state='declined';if(!o.tl)o.tl=[];o.tl.push({state:'declined',ts:Date.now()});lSave('inv_orders',orders);renderOrders();upStats();renderInv();await sbUpsert('orders',{id:o.id,idx:o.idx,item:o.item,brand:o.brand,size:o.size,reorder_label:o.rL||'',qty:o.qty,note:o.note||'',state:'declined',supplier:o.supplier||'',cost:o.cost||'',eta:o.eta||'',tracking:o.tracking||'',timeline:o.tl});window.open('mailto:'+BEN+'?subject='+encodeURIComponent('Restock update: '+o.item)+'&body='+encodeURIComponent('Hi Ben! Your request for '+o.item+' was declined.\n\nNot needed right now.\n\nThanks!'),'_blank');toast('Declined','Ben notified','r');}
 function openRS(id){rsId=id;const o=orders.find(x=>x.id===id);if(!o)return;const cur=gQ(o.idx);document.getElementById('rsinfo').innerHTML='<b>'+o.item+'</b> · Current stock: <b>'+cur+'</b>'+(o.supplier?' · From: '+o.supplier:'');document.getElementById('rsqty').value=o.qty||1;document.getElementById('rsnote').value='';document.getElementById('rsprev').textContent='New total: '+(cur+(o.qty||1));document.getElementById('mors').style.display='flex';}
 function aRS(d){const el=document.getElementById('rsqty');if(!el)return;el.value=Math.max(1,(parseInt(el.value)||1)+d);rsPrev();}
 function rsPrev(){const o=orders.find(x=>x.id===rsId);if(!o)return;const add=parseInt(document.getElementById('rsqty')?.value||1);document.getElementById('rsprev').textContent='New total: '+(gQ(o.idx)+add);}
@@ -617,16 +709,20 @@ async function doRS(){
   const o=orders.find(x=>x.id===rsId);if(!o)return;
   const add=parseInt(document.getElementById('rsqty')?.value||1),note=document.getElementById('rsnote').value.trim(),cur=gQ(o.idx),newT=cur+add;
   qtys[String(o.idx)]=newT;o.state='restocked';o.tl.push({state:'restocked',ts:Date.now()});
-  await Promise.all([jS(BQ,qtys),jS(BO,orders)]);
+  lSave('inv_qtys',qtys);lSave('inv_orders',orders);
+  await Promise.all([
+    sbUpsert('quantities',{idx:o.idx,qty:newT}),
+    sbUpsert('orders',{id:o.id,idx:o.idx,item:o.item,brand:o.brand,size:o.size,reorder_label:o.rL||'',qty:o.qty,note:o.note||'',state:'restocked',supplier:o.supplier||'',cost:o.cost||'',eta:o.eta||'',tracking:o.tracking||'',timeline:o.tl})
+  ]);
   cmo('mors');renderOrders();upStats();renderInv();
   window.open('mailto:'+BEN+'?subject='+encodeURIComponent('Restocked: '+o.item)+'&body='+encodeURIComponent('Hi Ben! '+o.item+' has been restocked.\nReceived: +'+add+'\nNew home stock: '+newT+(note?'\n\n'+note:'')+'\n\nThanks!'),'_blank');
   toast('Restocked! +'+add,'New total: '+newT,'g');
   setTimeout(()=>go('inv',document.querySelector('.nt')),900);
 }
-async function delOrd(id){const o=orders.find(x=>x.id===id);if(!o)return;if(!confirm('Delete order for "'+o.item+'"?'))return;orders=orders.filter(x=>x.id!==id);await jS(BO,orders);renderOrders();upStats();renderInv();toast('Order deleted',o.item,'r');}
+async function delOrd(id){const o=orders.find(x=>x.id===id);if(!o)return;if(!confirm('Delete order for "'+o.item+'"?'))return;orders=orders.filter(x=>x.id!==id);lSave('inv_orders',orders);renderOrders();upStats();renderInv();await sbDelete('orders','id',id);toast('Order deleted',o.item,'r');}
 
 // PACKING
-async function saveTN(){tripName=document.getElementById('tname')?.value||'';await jS(BT,{name:tripName});}
+async function saveTN(){tripName=document.getElementById('tname')?.value||'';lSave('inv_trip',tripName);await sbUpsert('trip',{id:1,name:tripName});}
 function aPQ(d){const e=document.getElementById('pqty');if(!e)return;e.value=Math.max(1,(parseInt(e.value)||1)+d);packPrev();}
 function bPS(){
   const sel=document.getElementById('psel');if(!sel)return;const pv=sel.value;
@@ -646,13 +742,16 @@ async function doPack(){
   if(q>h){toast('Not enough stock','Only '+h+' available','r');return;}
   qtys[String(i)]=h-q;const ex=packLog.find(p=>p.idx===i);
   if(ex)ex.qty+=q;else{const x=all()[i];packLog.push({idx:i,item:x.item,brand:x.brand,cat:x.cat,size:x.size,qty:q});}
-  await Promise.all([jS(BQ,qtys),jS(BP,packLog)]);
+  lSave('inv_qtys',qtys);lSave('inv_pack',packLog);
+  await Promise.all([sbUpsert('quantities',{idx:i,qty:qtys[String(i)]}),sbUpsert('pack_log',{idx:i,item:all()[i].item,brand:all()[i].brand,cat:all()[i].cat,size:all()[i].size,qty:ex?ex.qty:q})]);
   upStats();sel.value='';document.getElementById('pqty').value=1;packPrev();renderPL();bPS();
   toast('Packed '+q+'× '+all()[i].item,'','g');
 }
-async function unpackItem(i){const e=packLog.find(p=>p.idx===i);if(!e)return;qtys[String(i)]=(gQ(i))+e.qty;packLog=packLog.filter(p=>p.idx!==i);await Promise.all([jS(BQ,qtys),jS(BP,packLog)]);upStats();renderPL();bPS();toast('↩ Unpacked','Returned to home stock','b');}
-async function unpackAll(){if(!packLog.length)return;if(!confirm('Return all packed items to home stock?'))return;packLog.forEach(e=>{qtys[String(e.idx)]=(gQ(e.idx))+e.qty;});packLog=[];await Promise.all([jS(BQ,qtys),jS(BP,[{init:true}])]);upStats();renderPL();bPS();toast('All returned to home stock','','g');}
-async function clearPack(){if(!confirm('Clear packing list? Home quantities will NOT be returned.'))return;packLog=[];await jS(BP,[{init:true}]);renderPL();toast('Packing list cleared','','g');}
+  lSave('inv_qtys',qtys);lSave('inv_pack',packLog);
+  await Promise.all([sbUpsert('quantities',{idx:i,qty:qtys[String(i)]}),sbDelete('pack_log','idx',i)]);
+  lSave('inv_qtys',qtys);lSave('inv_pack',[]);
+  await fetch(SB_URL+'/rest/v1/pack_log?idx=gte.0',{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).catch(function(){});
+  lSave('inv_pack',[]);await fetch(SB_URL+'/rest/v1/pack_log?idx=gte.0',{method:'DELETE',headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY}}).catch(function(){});
 function renderPL(){
   const el=document.getElementById('plist');if(!el)return;
   const tt=document.getElementById('ptitle');if(tt)tt.textContent=packLog.length?'What\'s packed ('+packLog.length+' items, '+packLog.reduce((a,p)=>a+p.qty,0)+' units)':'What\'s packed';
@@ -705,23 +804,22 @@ async function saveEditGpic(){
   if(!g.builtin&&qtys._gallery){
     const qi=qtys._gallery.findIndex(x=>x.label===g.label);
     if(qi>-1){qtys._gallery[qi].label=newLabel;qtys._gallery[qi].sub=newSub;}
-    await jS(BQ,qtys);
+    lSave('inv_qtys',qtys);await sbUpsert('quantities',{key:'_gallery',val_json:JSON.stringify(qtys._gallery||[])});
   }
   cmo('moedit');renderGal();toast('Label updated','','g');
 }
 function openGAdd(){picB64=null;document.getElementById('pprevw').style.display='none';document.getElementById('pph').style.display='block';document.getElementById('pinput').value='';['glabel','gbrand','gsize'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});document.getElementById('mogal').style.display='flex';}
 function handlePic(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=(e)=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');const M=500;let w=img.width,h=img.height;if(w>h){if(w>M){h=h*M/w;w=M;}}else{if(h>M){w=w*M/h;h=M;}}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);picB64=c.toDataURL('image/jpeg',.72);document.getElementById('pprevimg').src=picB64;document.getElementById('pprevw').style.display='block';document.getElementById('pph').style.display='none';};img.src=e.target.result;};r.readAsDataURL(f);}
-async function saveGpic(){const lb=document.getElementById('glabel').value.trim();if(!lb){toast('Enter a label','','r');return;}const br=document.getElementById('gbrand').value.trim(),sz=document.getElementById('gsize').value.trim(),sub=br+(sz?' · '+sz:'');const e={label:lb,sub,img:picB64||'',custom:true};galData.push(e);if(!qtys._gallery)qtys._gallery=[];qtys._gallery.push(e);await jS(BQ,qtys);cmo('mogal');renderGal();toast('Photo added',lb,'g');}
+async function saveGpic(){const lb=document.getElementById('glabel').value.trim();if(!lb){toast('Enter a label','','r');return;}const br=document.getElementById('gbrand').value.trim(),sz=document.getElementById('gsize').value.trim(),sub=br+(sz?' · '+sz:'');const e={label:lb,sub,img:picB64||'',custom:true};galData.push(e);if(!qtys._gallery)qtys._gallery=[];qtys._gallery.push(e);lSave('inv_qtys',qtys);await sbUpsert('quantities',{key:'_gallery',val_json:JSON.stringify(qtys._gallery||[])});cmo('mogal');renderGal();toast('Photo added',lb,'g');}
 async function delGpic(i,e){
   e.stopPropagation();
   var vis=galData.filter(function(g){return g.img&&!g.img.includes('PLACEHOLDER');});
   var g=vis[i];if(!g)return;
   if(!confirm('Remove "'+g.label+'" from gallery?'))return;
   galData=galData.filter(function(x){return x!==g;});
-  if(g.custom&&qtys._gallery)qtys._gallery=qtys._gallery.filter(function(x){return x.label!==g.label;});
-  if(g.builtin&&!qtys._hidden_gallery)qtys._hidden_gallery=[];
-  if(g.builtin)qtys._hidden_gallery.push(g.label);
-  await jS(BQ,qtys);renderGal();toast('Photo removed',g.label,'r');
+  if(g.custom&&qtys._gallery){qtys._gallery=qtys._gallery.filter(function(x){return x.label!==g.label;});await sbUpsert('quantities',{key:'_gallery',val_json:JSON.stringify(qtys._gallery)});}
+  if(g.builtin){if(!qtys._hidden_gallery)qtys._hidden_gallery=[];qtys._hidden_gallery.push(g.label);await sbUpsert('quantities',{key:'_hidden',val_json:JSON.stringify(qtys._hidden_gallery)});}
+  lSave('inv_qtys',qtys);renderGal();toast('Photo removed',g.label,'r');
 }
 function renderGal(){
   var el=document.getElementById('ggrid');if(!el)return;
@@ -747,6 +845,10 @@ async function go(name,btn){
   ['inv','orders','pack','gallery'].forEach(p=>{const e=document.getElementById('page-'+p);if(e)e.className='page';});
   document.getElementById('page-'+name).className='page on';
   document.querySelectorAll('.nt').forEach(b=>b.classList.remove('on'));btn.classList.add('on');
+  // Render immediately with current state
+  if(name==='inv'){renderInv();upStats();}
+  if(name==='orders'){renderOrders();upStats();}
+  // Then reload from JSONBin and re-render
   await load();
   if(name==='inv'){renderInv();upStats();}
   if(name==='orders'){renderOrders();upStats();}
