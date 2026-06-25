@@ -21,162 +21,18 @@ const CATEGORIES = [
 ];
 
 const INITIAL_INVENTORY = [
-  {
-    id: "razor-blades",
-    category: "Toiletries",
-    item: "Razor blades",
-    brand: "Gillette",
-    use: "Both",
-    homeStock: 4,
-    travelStock: 1,
-    reorderAt: 2,
-    notes: "2-pack",
-    photo: "",
-    requested: false,
-  },
-  {
-    id: "toothpaste-full",
-    category: "Toiletries",
-    item: "Toothpaste — full size",
-    brand: "Sensodyne",
-    use: "Home",
-    homeStock: 1,
-    travelStock: 0,
-    reorderAt: 1,
-    notes: "Full tube",
-    photo: "",
-    requested: false,
-  },
-  {
-    id: "toothpaste-travel",
-    category: "Toiletries",
-    item: "Toothpaste — travel size",
-    brand: "Sensodyne",
-    use: "Travel",
-    homeStock: 2,
-    travelStock: 1,
-    reorderAt: 1,
-    notes: "Travel tube",
-    photo: "",
-    requested: false,
-  },
-  {
-    id: "floss",
-    category: "Toiletries",
-    item: "Dental floss",
-    brand: "Oral-B Glide",
-    use: "Both",
-    homeStock: 1,
-    travelStock: 0,
-    reorderAt: 1,
-    notes: "Standard",
-    photo: "",
-    requested: false,
-  },
-  {
-    id: "mouthwash-full",
-    category: "Toiletries",
-    item: "Mouthwash — full size",
-    brand: "Listerine",
-    use: "Home",
-    homeStock: 1,
-    travelStock: 0,
-    reorderAt: 1,
-    notes: "Full bottle",
-    photo: "",
-    requested: false,
-  },
-  {
-    id: "mouthwash-travel",
-    category: "Toiletries",
-    item: "Mouthwash — travel size",
-    brand: "Listerine",
-    use: "Travel",
-    homeStock: 2,
-    travelStock: 1,
-    reorderAt: 1,
-    notes: "3 fl oz",
-    photo: "",
-    requested: false,
-  },
-  {
-    id: "deodorant",
-    category: "Toiletries",
-    item: "Deodorant",
-    brand: "Degree",
-    use: "Both",
-    homeStock: 1,
-    travelStock: 0,
-    reorderAt: 1,
-    notes: "2.7 oz",
-    photo: "",
-    requested: false,
-  },
-  {
-    id: "cotton-swabs",
-    category: "Toiletries",
-    item: "Cotton swabs",
-    brand: "Unknown",
-    use: "Home",
-    homeStock: 1,
-    travelStock: 0,
-    reorderAt: 1,
-    notes: "Jar",
-    photo: "",
-    requested: false,
-  },
-  {
-    id: "cerave",
-    category: "Skincare",
-    item: "Daily moisturizing lotion",
-    brand: "CeraVe",
-    use: "Home",
-    homeStock: 1,
-    travelStock: 0,
-    reorderAt: 1,
-    notes: "16 fl oz",
-    photo: "",
-    requested: false,
-  },
-  {
-    id: "jack-black-spf20",
-    category: "Sunscreen",
-    item: "Face moisturizer SPF 20",
-    brand: "Jack Black",
-    use: "Both",
-    homeStock: 1,
-    travelStock: 0,
-    reorderAt: 1,
-    notes: "6.5 fl oz",
-    photo: "",
-    requested: false,
-  },
-  {
-    id: "advil",
-    category: "Medications",
-    item: "Advil ibuprofen 200mg",
-    brand: "Advil",
-    use: "Both",
-    homeStock: 1,
-    travelStock: 1,
-    reorderAt: 1,
-    notes: "Tablets",
-    photo: "",
-    requested: false,
-  },
-  {
-    id: "align",
-    category: "Supplements",
-    item: "Align probiotic",
-    brand: "Align",
-    use: "Home",
-    homeStock: 1,
-    travelStock: 0,
-    reorderAt: 1,
-    notes: "63 capsules",
-    photo: "",
-    requested: false,
-  },
+  { id: "razor-blades", category: "Toiletries", item: "Razor blades", brand: "Gillette", use: "Both", homeStock: 4, travelStock: 1, reorderAt: 2, notes: "2-pack", photo: "", requested: false },
+  { id: "toothpaste-full", category: "Toiletries", item: "Toothpaste — full size", brand: "Sensodyne", use: "Home", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "Full tube", photo: "", requested: false },
+  { id: "toothpaste-travel", category: "Toiletries", item: "Toothpaste — travel size", brand: "Sensodyne", use: "Travel", homeStock: 2, travelStock: 1, reorderAt: 1, notes: "Travel tube", photo: "", requested: false },
+  { id: "floss", category: "Toiletries", item: "Dental floss", brand: "Oral-B Glide", use: "Both", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "Standard", photo: "", requested: false },
+  { id: "mouthwash-full", category: "Toiletries", item: "Mouthwash — full size", brand: "Listerine", use: "Home", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "Full bottle", photo: "", requested: false },
+  { id: "mouthwash-travel", category: "Toiletries", item: "Mouthwash — travel size", brand: "Listerine", use: "Travel", homeStock: 2, travelStock: 1, reorderAt: 1, notes: "3 fl oz", photo: "", requested: false },
+  { id: "deodorant", category: "Toiletries", item: "Deodorant", brand: "Degree", use: "Both", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "2.7 oz", photo: "", requested: false },
+  { id: "cotton-swabs", category: "Toiletries", item: "Cotton swabs", brand: "Unknown", use: "Home", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "Jar", photo: "", requested: false },
+  { id: "cerave", category: "Skincare", item: "Daily moisturizing lotion", brand: "CeraVe", use: "Home", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "16 fl oz", photo: "", requested: false },
+  { id: "jack-black-spf20", category: "Sunscreen", item: "Face moisturizer SPF 20", brand: "Jack Black", use: "Both", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "6.5 fl oz", photo: "", requested: false },
+  { id: "advil", category: "Medications", item: "Advil ibuprofen 200mg", brand: "Advil", use: "Both", homeStock: 1, travelStock: 1, reorderAt: 1, notes: "Tablets", photo: "", requested: false },
+  { id: "align", category: "Supplements", item: "Align probiotic", brand: "Align", use: "Home", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "63 capsules", photo: "", requested: false },
 ];
 
 const loadJSON = (key, fallback) => {
@@ -310,23 +166,9 @@ function App() {
     if (!packItemId && inventory.length) setPackItemId(inventory[0].id);
   }, [inventory, packItemId]);
 
-  const currentOrders = useMemo(() => {
-    return orders.filter((o) => o.status !== "done" && o.status !== "declined");
-  }, [orders]);
-
-  const orderCounts = useMemo(() => ({
-    requested: orders.filter((o) => o.status === "requested").length,
-    onOrder: orders.filter((o) => o.status === "on order").length,
-    done: orders.filter((o) => o.status === "done").length,
-  }), [orders]);
-
-  const stats = useMemo(() => ({
-    items: inventory.length,
-    low: inventory.filter((i) => i.homeStock <= i.reorderAt).length,
-    requested: orders.filter((o) => o.status === "requested").length,
-    onOrder: orders.filter((o) => o.status === "on order").length,
-  }), [inventory, orders]);
-
+  const currentOrders = useMemo(() => orders.filter((o) => o.status !== "done" && o.status !== "declined"), [orders]);
+  const orderCounts = useMemo(() => ({ requested: orders.filter((o) => o.status === "requested").length, onOrder: orders.filter((o) => o.status === "on order").length, done: orders.filter((o) => o.status === "done").length }), [orders]);
+  const stats = useMemo(() => ({ items: inventory.length, low: inventory.filter((i) => i.homeStock <= i.reorderAt).length, requested: orders.filter((o) => o.status === "requested").length, onOrder: orders.filter((o) => o.status === "on order").length }), [inventory, orders]);
   const categoriesForFilter = useMemo(() => ["All", ...new Set(inventory.map((i) => i.category))], [inventory]);
 
   const filteredInventory = useMemo(() => {
@@ -336,36 +178,22 @@ function App() {
       const status = calcStatus(item, order);
       const matchesSearch = !q || [item.category, item.item, item.brand, item.use, item.notes].join(" ").toLowerCase().includes(q);
       const matchesCategory = category === "All" || item.category === category;
-      const matchesInventoryFilter =
-        inventoryFilter === "All"
-          || (inventoryFilter === "Low stock" && (item.homeStock <= item.reorderAt))
-          || (inventoryFilter === "Monitor" && item.homeStock <= item.reorderAt)
-          || (inventoryFilter === "Active orders" && (item.requested || order?.status === "requested" || order?.status === "on order"))
-          || (inventoryFilter === "Home only" && item.use === "Home")
-          || (inventoryFilter === "Travel only" && item.use === "Travel");
-      return matchesSearch && matchesCategory && matchesInventoryFilter && status;
+      const matchesInventoryFilter = inventoryFilter === "All"
+        || (inventoryFilter === "Low stock" && item.homeStock <= item.reorderAt)
+        || (inventoryFilter === "Monitor" && item.homeStock <= item.reorderAt)
+        || (inventoryFilter === "Active orders" && (item.requested || order?.status === "requested" || order?.status === "on order"))
+        || (inventoryFilter === "Home only" && item.use === "Home")
+        || (inventoryFilter === "Travel only" && item.use === "Travel");
+      return matchesSearch && matchesCategory && matchesInventoryFilter && !!status;
     });
   }, [inventory, search, category, inventoryFilter, orders]);
 
   const selectedOrder = orders.find((o) => o.id === selectedOrderId) || currentOrders[0] || null;
-
   const packableItems = inventory.filter((i) => i.homeStock > 0);
   const packedItems = inventory.filter((i) => i.travelStock > 0);
 
   function saveDraftItem() {
-    const next = {
-      id: editingId || uid(),
-      category: draft.category,
-      item: draft.item.trim(),
-      brand: draft.brand.trim(),
-      use: draft.use,
-      homeStock: Number(draft.homeStock) || 0,
-      travelStock: Number(draft.travelStock) || 0,
-      reorderAt: Number(draft.reorderAt) || 1,
-      notes: draft.notes.trim(),
-      photo: draft.photo || "",
-      requested: false,
-    };
+    const next = { id: editingId || uid(), category: draft.category, item: draft.item.trim(), brand: draft.brand.trim(), use: draft.use, homeStock: Number(draft.homeStock) || 0, travelStock: Number(draft.travelStock) || 0, reorderAt: Number(draft.reorderAt) || 1, notes: draft.notes.trim(), photo: draft.photo || "", requested: false };
     if (!next.item) return;
     setInventory((prev) => (editingId ? prev.map((i) => (i.id === editingId ? next : i)) : [next, ...prev]));
     setShowModal(false);
@@ -380,17 +208,7 @@ function App() {
 
   function openEditItem(item) {
     setEditingId(item.id);
-    setDraft({
-      item: item.item,
-      brand: item.brand,
-      category: item.category,
-      use: item.use,
-      homeStock: item.homeStock,
-      travelStock: item.travelStock,
-      reorderAt: item.reorderAt,
-      notes: item.notes || "",
-      photo: item.photo || "",
-    });
+    setDraft({ item: item.item, brand: item.brand, category: item.category, use: item.use, homeStock: item.homeStock, travelStock: item.travelStock, reorderAt: item.reorderAt, notes: item.notes || "", photo: item.photo || "" });
     setShowModal(true);
   }
 
@@ -421,22 +239,12 @@ function App() {
     const order = orders.find((o) => o.id === orderId);
     if (!order) return;
 
-    // If a restock order is completed, put the quantity back into home stock.
     if (order.kind === "restock" && status === "done" && order.status !== "done" && order.itemId) {
-      setInventory((prev) =>
-        prev.map((i) =>
-          i.id === order.itemId
-            ? { ...i, homeStock: i.homeStock + (Number(order.qty) || 1), requested: false }
-            : i
-        )
-      );
+      setInventory((prev) => prev.map((i) => (i.id === order.itemId ? { ...i, homeStock: i.homeStock + (Number(order.qty) || 1), requested: false } : i)));
     }
 
-    // If a request is declined or completed, clear the requested flag on the item.
     if (order.kind === "restock" && (status === "done" || status === "declined") && order.itemId) {
-      setInventory((prev) =>
-        prev.map((i) => (i.id === order.itemId ? { ...i, requested: false } : i))
-      );
+      setInventory((prev) => prev.map((i) => (i.id === order.itemId ? { ...i, requested: false } : i)));
     }
 
     setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status } : o)));
@@ -447,10 +255,7 @@ function App() {
 
   function addNewRequest() {
     if (!newRequest.item.trim()) return;
-    setOrders((prev) => [
-      { id: uid(), kind: "new", itemId: null, item: newRequest.item.trim(), brand: newRequest.brand.trim(), category: newRequest.category, qty: Number(newRequest.qty) || 1, use: newRequest.use, status: "requested", note: newRequest.note.trim() },
-      ...prev,
-    ]);
+    setOrders((prev) => [{ id: uid(), kind: "new", itemId: null, item: newRequest.item.trim(), brand: newRequest.brand.trim(), category: newRequest.category, qty: Number(newRequest.qty) || 1, use: newRequest.use, status: "requested", note: newRequest.note.trim() }, ...prev]);
     setNewRequest({ item: "", brand: "", category: "Household", use: "Home", qty: 1, note: "" });
     setActiveTab("New request");
   }
@@ -458,19 +263,7 @@ function App() {
   function approveNewRequest(orderId) {
     const order = orders.find((o) => o.id === orderId);
     if (!order) return;
-    const newItem = {
-      id: uid(),
-      category: order.category,
-      item: order.item,
-      brand: order.brand,
-      use: order.use,
-      homeStock: order.qty,
-      travelStock: 0,
-      reorderAt: 1,
-      notes: order.note,
-      photo: "",
-      requested: false,
-    };
+    const newItem = { id: uid(), category: order.category, item: order.item, brand: order.brand, use: order.use, homeStock: order.qty, travelStock: 0, reorderAt: 1, notes: order.note, photo: "", requested: false };
     setInventory((prev) => [newItem, ...prev]);
     setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: "done" } : o)));
     setSelectedOrderId(null);
@@ -507,11 +300,7 @@ function App() {
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-          {categoriesForFilter.map((c) => (
-            <Pill key={c} active={category === c} small onClick={() => setCategory(c)}>
-              {c}
-            </Pill>
-          ))}
+          {categoriesForFilter.map((c) => <Pill key={c} active={category === c} small onClick={() => setCategory(c)}>{c}</Pill>)}
         </div>
 
         <div style={{ display: "flex", gap: 8, marginLeft: "auto", alignItems: "center" }}>
@@ -522,14 +311,7 @@ function App() {
       </div>
 
       <div style={{ display: "flex", gap: 28, alignItems: "center", borderBottom: "1px solid #e5e9f0", paddingBottom: 10, color: "#64748b", fontWeight: 700, overflowX: "auto" }}>
-        {[
-          "All",
-          "Low stock",
-          "Monitor",
-          "Active orders",
-          "Home only",
-          "Travel only",
-        ].map((f) => (
+        {["All", "Low stock", "Monitor", "Active orders", "Home only", "Travel only"].map((f) => (
           <button key={f} onClick={() => setInventoryFilter(f)} style={{ background: "transparent", border: "none", borderBottom: inventoryFilter === f ? "4px solid #22345c" : "4px solid transparent", paddingBottom: 10, color: inventoryFilter === f ? "#22345c" : "#64748b", fontWeight: 800 }}>
             {f === "Monitor" ? "⚠️ Monitor" : f === "Active orders" ? "⚡ Active orders" : f === "Home only" ? "🏠 Home only" : f === "Travel only" ? "✈️ Travel only" : f === "Low stock" ? "🔴 Low stock" : f}
           </button>
@@ -541,9 +323,7 @@ function App() {
           <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
             <thead>
               <tr style={{ background: "#22345c", color: "#fff" }}>
-                {["Category", "Item", "Brand", "Use", "Home stock", "Reorder at", "Status", "Action"].map((head) => (
-                  <th key={head} style={{ textAlign: "left", padding: "14px 16px", fontSize: 14, letterSpacing: 0.4 }}>{head.toUpperCase()}</th>
-                ))}
+                {["Category", "Item", "Brand", "Use", "Home stock", "Reorder at", "Status", "Action"].map((head) => <th key={head} style={{ textAlign: "left", padding: "14px 16px", fontSize: 14, letterSpacing: 0.4 }}>{head.toUpperCase()}</th>)}
               </tr>
             </thead>
             <tbody>
@@ -585,20 +365,20 @@ function App() {
             const order = orders.find((o) => o.itemId === item.id && o.status !== "done" && o.status !== "declined");
             const status = calcStatus(item, order);
             return (
-              <div key={item.id} style={{ border: "1px solid #dfe5ee", borderRadius: 16, overflow: "hidden", background: "#fff", boxShadow: "0 8px 18px rgba(31,43,74,.05)" }}>
-                <div style={{ height: 140, background: item.photo ? `url(${item.photo}) center/cover` : "linear-gradient(135deg, #f2f6fb, #dfe8f5)", display: "flex", alignItems: "center", justifyContent: "center", color: "#6b7280", fontWeight: 700 }}> {item.photo ? "" : "Photo"} </div>
+              <div key={item.id} style={{ border: "1px solid #dfe5ee", borderRadius: 16, overflow: "hidden", background: "#fff", boxShadow: "0 8px 18px rgba(31,43,74,.05)", cursor: "pointer" }} onClick={() => openEditItem(item)}>
+                <div style={{ height: 180, background: item.photo ? `url(${item.photo}) center/cover` : "linear-gradient(135deg, #f2f6fb, #dfe8f5)", display: "flex", alignItems: "center", justifyContent: "center", color: "#6b7280", fontWeight: 700 }}>{item.photo ? "" : "Photo preview"}</div>
                 <div style={{ padding: 14 }}>
                   <div style={{ fontWeight: 900, color: "#111827" }}>{item.item}</div>
                   <div style={{ marginTop: 6, color: "#6b7280", fontSize: 14 }}>{item.brand} · {item.category}</div>
                   <div style={{ marginTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <Badge text={status} tone={status === "Stocked" ? "good" : status.startsWith("Low") || status === "Out" ? "warn" : "info"} />
                     <div style={{ display: "flex", gap: 8 }}>
-                      <button onClick={() => openEditItem(item)} style={{ border: "1px solid #dfe5ee", background: "#fff", borderRadius: 10, padding: "8px 10px", fontWeight: 800 }}>Edit</button>
-                      <button onClick={() => deleteItem(item.id)} style={{ border: "1px solid #df6b6b", background: "#fff", color: "#cc4b4b", borderRadius: 10, padding: "8px 10px", fontWeight: 800 }}>Delete</button>
+                      <button onClick={(e) => { e.stopPropagation(); openEditItem(item); }} style={{ border: "1px solid #dfe5ee", background: "#fff", borderRadius: 10, padding: "8px 10px", fontWeight: 800 }}>Edit</button>
+                      <button onClick={(e) => { e.stopPropagation(); deleteItem(item.id); }} style={{ border: "1px solid #df6b6b", background: "#fff", color: "#cc4b4b", borderRadius: 10, padding: "8px 10px", fontWeight: 800 }}>Delete</button>
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                    <button onClick={() => requestRestock(item.id)} style={{ flex: 1, background: "#5f60c7", color: "#fff", border: "none", borderRadius: 10, padding: "10px 12px", fontWeight: 900 }}>🛒 Request restock</button>
+                    <button onClick={(e) => { e.stopPropagation(); requestRestock(item.id); }} style={{ flex: 1, background: "#5f60c7", color: "#fff", border: "none", borderRadius: 10, padding: "10px 12px", fontWeight: 900 }}>🛒 Request restock</button>
                   </div>
                 </div>
               </div>
@@ -624,11 +404,7 @@ function App() {
       </section>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
-        {[
-          ["requested", "Requested", "#fff3cd"],
-          ["on order", "On order", "#e5f4e8"],
-          ["done", "Done", "#e5f4e8"],
-        ].map(([status, label, bg]) => (
+        {[["requested", "Requested", "#fff3cd"], ["on order", "On order", "#e5f4e8"], ["done", "Done", "#e5f4e8"]].map(([status, label, bg]) => (
           <div key={status} style={{ border: "1px solid #dfe5ee", borderRadius: 16, background: "#fff", minHeight: 130, overflow: "hidden" }}>
             <div style={{ padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center", fontWeight: 900, color: "#1f2b4a" }}>
               <div>{label}</div>
@@ -673,9 +449,7 @@ function App() {
                 )}
               </div>
             </>
-          ) : (
-            <div style={{ textAlign: "center", color: "#6b7280", padding: 36 }}>Click any item in the pipeline to review, approve, log details, or confirm restocking.</div>
-          )}
+          ) : <div style={{ textAlign: "center", color: "#6b7280", padding: 36 }}>Click any item in the pipeline to review, approve, log details, or confirm restocking.</div>}
         </div>
       </div>
     </div>
@@ -683,15 +457,12 @@ function App() {
 
   const packingView = (
     <div style={{ display: "grid", gap: 18 }}>
-      <Panel title="Packing list" subtitle="Pack from home · Auto-deducts · Unpack when back" right={<div style={{ display: "flex", gap: 10 }}><button onClick={unpackAll} style={{ background: "#d0a63d", color: "#22345c", border: "none", borderRadius: 12, padding: "10px 16px", fontWeight: 900 }}>↩ Unpack all</button><button onClick={() => setInventory((prev) => prev.map((i) => ({ ...i, travelStock: 0 }))) } style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "10px 16px", fontWeight: 900 }}>🗑 Clear</button></div>}>
+      <Panel title="Packing list" subtitle="Pack from home · Auto-deducts · Unpack when back" right={<div style={{ display: "flex", gap: 10 }}><button onClick={unpackAll} style={{ background: "#d0a63d", color: "#22345c", border: "none", borderRadius: 12, padding: "10px 16px", fontWeight: 900 }}>↩ Unpack all</button><button onClick={() => setInventory((prev) => prev.map((i) => ({ ...i, travelStock: 0 })))} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 12, padding: "10px 16px", fontWeight: 900 }}>🗑 Clear</button></div>}>
         <div style={{ padding: 18, display: "grid", gap: 14 }}>
           <div style={{ border: "1px solid #dfe5ee", borderRadius: 16, overflow: "hidden" }}>
             <div style={{ background: "#22345c", color: "#fff", padding: "12px 16px", fontWeight: 900 }}>Trip name</div>
-            <div style={{ padding: 14 }}>
-              <input value={tripName} onChange={(e) => setTripName(e.target.value)} placeholder="e.g. NYC business trip, June 2026" style={{ width: "100%", border: "1px solid #dfe5ee", borderRadius: 12, padding: 14, fontSize: 16, outline: "none" }} />
-            </div>
+            <div style={{ padding: 14 }}><input value={tripName} onChange={(e) => setTripName(e.target.value)} placeholder="e.g. NYC business trip, June 2026" style={{ width: "100%", border: "1px solid #dfe5ee", borderRadius: 12, padding: 14, fontSize: 16, outline: "none" }} /></div>
           </div>
-
           <div style={{ border: "1px solid #dfe5ee", borderRadius: 16, overflow: "hidden" }}>
             <div style={{ background: "#22345c", color: "#fff", padding: "12px 16px", fontWeight: 900 }}>Pack an item</div>
             <div style={{ padding: 16 }}>
@@ -712,16 +483,9 @@ function App() {
                 </div>
                 <button onClick={packItem} style={{ background: "#22345c", color: "#fff", border: "none", borderRadius: 12, padding: "12px 14px", fontWeight: 900 }}>+ Pack</button>
               </div>
-              <div style={{ marginTop: 12, padding: 12, border: "1px solid #edf1f5", borderRadius: 12, background: "#fafbfd", color: "#374151" }}>
-                {(() => {
-                  const item = inventory.find((i) => i.id === packItemId);
-                  if (!item) return "Select an item to see available home stock.";
-                  return `${item.item} — Home: ${item.homeStock} → after packing: ${Math.max(0, item.homeStock - Number(packQty || 1))}`;
-                })()}
-              </div>
+              <div style={{ marginTop: 12, padding: 12, border: "1px solid #edf1f5", borderRadius: 12, background: "#fafbfd", color: "#374151" }}>{(() => { const item = inventory.find((i) => i.id === packItemId); if (!item) return "Select an item to see available home stock."; return `${item.item} — Home: ${item.homeStock} → after packing: ${Math.max(0, item.homeStock - Number(packQty || 1))}`; })()}</div>
             </div>
           </div>
-
           <div style={{ border: "1px solid #dfe5ee", borderRadius: 16, overflow: "hidden" }}>
             <div style={{ background: "#22345c", color: "#fff", padding: "12px 16px", fontWeight: 900 }}>What's packed</div>
             <div style={{ padding: 18 }}>
@@ -736,9 +500,7 @@ function App() {
                     <button onClick={() => setInventory((prev) => prev.map((i) => i.id === item.id ? { ...i, homeStock: i.homeStock + i.travelStock, travelStock: 0 } : i))} style={{ border: "1px solid #e2e8f0", background: "#fff", borderRadius: 10, padding: "8px 10px", fontWeight: 900 }}>Unpack all</button>
                   </div>
                 </div>
-              )) : (
-                <div style={{ textAlign: "center", color: "#6b7280", padding: 34 }}>No items packed yet.<br />Use the form above to pack from home stock.</div>
-              )}
+              )) : <div style={{ textAlign: "center", color: "#6b7280", padding: 34 }}>No items packed yet.<br />Use the form above to pack from home stock.</div>}
             </div>
           </div>
         </div>
@@ -781,14 +543,11 @@ function App() {
               {CATEGORIES.filter((c) => c !== "All").map((c) => <option key={c}>{c}</option>)}
             </select>
             <select value={newRequest.use} onChange={(e) => setNewRequest((p) => ({ ...p, use: e.target.value }))} style={{ border: "1px solid #dfe5ee", borderRadius: 12, padding: 12 }}>
-              <option>Home</option>
-              <option>Travel</option>
-              <option>Both</option>
+              <option>Home</option><option>Travel</option><option>Both</option>
             </select>
             <input type="number" min="1" value={newRequest.qty} onChange={(e) => setNewRequest((p) => ({ ...p, qty: e.target.value }))} placeholder="Qty" style={{ border: "1px solid #dfe5ee", borderRadius: 12, padding: 12 }} />
             <input value={newRequest.note} onChange={(e) => setNewRequest((p) => ({ ...p, note: e.target.value }))} placeholder="Note" style={{ border: "1px solid #dfe5ee", borderRadius: 12, padding: 12 }} />
           </div>
-
           <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid #dfe5ee" }}>
             <div style={{ background: "#22345c", color: "#fff", padding: "12px 16px", fontWeight: 900 }}>Pending requests</div>
             <div style={{ padding: 18 }}>
@@ -803,9 +562,7 @@ function App() {
                     <button onClick={() => setOrderStatus(o.id, "declined")} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 10, padding: "8px 12px", fontWeight: 900 }}>Decline</button>
                   </div>
                 </div>
-              )) : (
-                <div style={{ textAlign: "center", color: "#6b7280", padding: 34 }}>No requests yet.<br />Click "+ Submit new request" to request a brand new item.</div>
-              )}
+              )) : <div style={{ textAlign: "center", color: "#6b7280", padding: 34 }}>No requests yet.<br />Click "+ Submit new request" to request a brand new item.</div>}
             </div>
           </div>
         </div>
@@ -814,7 +571,7 @@ function App() {
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "#f6f8fc", color: "#0f172a" }}>
+    <div style={{ minHeight: "100vh", background: "#f6f8fc", color: "#0f172a", fontFamily: "Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
       <header style={{ background: "linear-gradient(180deg, #213258 0%, #1d2d52 100%)", color: "#fff", padding: "24px 28px 20px", boxShadow: "inset 0 -1px 0 rgba(255,255,255,.08)" }}>
         <div style={{ fontSize: 22, fontWeight: 900 }}>Home & Travel <span style={{ color: "#d0a63d" }}>Inventory</span></div>
       </header>
@@ -857,20 +614,13 @@ function App() {
               {CATEGORIES.filter((c) => c !== "All").map((c) => <option key={c}>{c}</option>)}
             </select>
             <select value={draft.use} onChange={(e) => setDraft((p) => ({ ...p, use: e.target.value }))} style={{ border: "1px solid #dfe5ee", borderRadius: 12, padding: 12 }}>
-              <option>Home</option>
-              <option>Travel</option>
-              <option>Both</option>
+              <option>Home</option><option>Travel</option><option>Both</option>
             </select>
             <input type="number" min="0" value={draft.homeStock} onChange={(e) => setDraft((p) => ({ ...p, homeStock: e.target.value }))} placeholder="Home stock" style={{ border: "1px solid #dfe5ee", borderRadius: 12, padding: 12 }} />
             <input type="number" min="0" value={draft.travelStock} onChange={(e) => setDraft((p) => ({ ...p, travelStock: e.target.value }))} placeholder="Travel stock" style={{ border: "1px solid #dfe5ee", borderRadius: 12, padding: 12 }} />
             <input type="number" min="0" value={draft.reorderAt} onChange={(e) => setDraft((p) => ({ ...p, reorderAt: e.target.value }))} placeholder="Reorder at" style={{ border: "1px solid #dfe5ee", borderRadius: 12, padding: 12 }} />
             <input value={draft.notes} onChange={(e) => setDraft((p) => ({ ...p, notes: e.target.value }))} placeholder="Notes" style={{ border: "1px solid #dfe5ee", borderRadius: 12, padding: 12 }} />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) => onUploadPhoto(e.target.files?.[0], (photo) => setDraft((p) => ({ ...p, photo })))}
-              style={{ border: "1px solid #dfe5ee", borderRadius: 12, padding: 12, gridColumn: "1 / -1" }}
-            />
+            <input type="file" accept="image/*" onChange={(e) => onUploadPhoto(e.target.files?.[0], (photo) => setDraft((p) => ({ ...p, photo })))} style={{ border: "1px solid #dfe5ee", borderRadius: 12, padding: 12, gridColumn: "1 / -1" }} />
             {draft.photo ? <img src={draft.photo} alt="preview" style={{ gridColumn: "1 / -1", width: "100%", maxHeight: 240, objectFit: "cover", borderRadius: 14, border: "1px solid #dfe5ee" }} /> : null}
           </div>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 18 }}>
