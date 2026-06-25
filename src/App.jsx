@@ -1,39 +1,82 @@
 function App() {
   return (
-    <div
-      style={{
-        fontFamily: "Arial",
-        background: "#f5f7fb",
-        minHeight: "100vh",
-      }}
-    >
-      <header
-        style={{
-          background: "#1f2b4a",
-          color: "white",
-          padding: "20px 40px",
-          fontSize: "28px",
-          fontWeight: "bold",
-        }}
-      >
-        🏠 Ben's Home & Travel Inventory
-      </header>
+    <div className="dashboard">
+      <aside className="sidebar">
+        <h2>Ben's Inventory</h2>
+        <ul>
+          <li>Dashboard</li>
+          <li>Inventory</li>
+          <li>Gallery</li>
+          <li>Packing</li>
+          <li>Orders</li>
+          <li>Settings</li>
+        </ul>
+      </aside>
 
-      <div style={{ padding: "40px" }}>
-        <h1>Welcome!</h1>
+      <main className="main">
+        <div className="header">
+          <h1>Dashboard</h1>
+          <button className="primary-btn">+ Add Item</button>
+        </div>
 
-        <p>
-          Congratulations! 🎉
-        </p>
+        <div className="cards">
+          <div className="card">
+            <h3>Home Stock</h3>
+            <h2>126</h2>
+          </div>
+          <div className="card">
+            <h3>Travel Stock</h3>
+            <h2>38</h2>
+          </div>
+          <div className="card">
+            <h3>Low Stock</h3>
+            <h2>4</h2>
+          </div>
+          <div className="card">
+            <h3>Orders Pending</h3>
+            <h2>3</h2>
+          </div>
+        </div>
 
-        <p>
-          Your React application is now working.
-        </p>
-
-        <p>
-          From here we'll build the real inventory system.
-        </p>
-      </div>
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Item</th>
+              <th>Brand</th>
+              <th>Home</th>
+              <th>Travel</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Skincare</td>
+              <td>Neutrogena SPF 70</td>
+              <td>Neutrogena</td>
+              <td>1</td>
+              <td>1</td>
+              <td>Stocked</td>
+            </tr>
+            <tr>
+              <td>Medications</td>
+              <td>Advil</td>
+              <td>Advil</td>
+              <td>1</td>
+              <td>1</td>
+              <td>Low</td>
+            </tr>
+            <tr>
+              <td>Supplements</td>
+              <td>Align Probiotic</td>
+              <td>Align</td>
+              <td>1</td>
+              <td>0</td>
+              <td>Stocked</td>
+            </tr>
+          </tbody>
+        </table>
+      </main>
     </div>
   );
 }
