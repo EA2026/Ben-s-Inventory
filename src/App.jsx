@@ -21,18 +21,44 @@ const CATEGORIES = [
 ];
 
 const INITIAL_INVENTORY = [
-  { id: "razor-blades", category: "Toiletries", item: "Razor blades", brand: "Gillette", use: "Both", homeStock: 4, travelStock: 1, reorderAt: 2, notes: "2-pack", photo: "", requested: false },
+  { id: "razor-blades", category: "Toiletries", item: "Razor blades", brand: "Gillette", use: "Both", homeStock: 4, travelStock: 0, reorderAt: 2, notes: "2-pack", photo: "", requested: false },
   { id: "toothpaste-full", category: "Toiletries", item: "Toothpaste — full size", brand: "Sensodyne", use: "Home", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "Full tube", photo: "", requested: false },
-  { id: "toothpaste-travel", category: "Toiletries", item: "Toothpaste — travel size", brand: "Sensodyne", use: "Travel", homeStock: 2, travelStock: 1, reorderAt: 1, notes: "Travel tube", photo: "", requested: false },
+  { id: "toothpaste-travel", category: "Toiletries", item: "Toothpaste — travel size", brand: "Sensodyne", use: "Travel", homeStock: 2, travelStock: 0, reorderAt: 1, notes: "Travel tube", photo: "", requested: false },
   { id: "floss", category: "Toiletries", item: "Dental floss", brand: "Oral-B Glide", use: "Both", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "Standard", photo: "", requested: false },
   { id: "mouthwash-full", category: "Toiletries", item: "Mouthwash — full size", brand: "Listerine", use: "Home", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "Full bottle", photo: "", requested: false },
-  { id: "mouthwash-travel", category: "Toiletries", item: "Mouthwash — travel size", brand: "Listerine", use: "Travel", homeStock: 2, travelStock: 1, reorderAt: 1, notes: "3 fl oz", photo: "", requested: false },
+  { id: "mouthwash-travel", category: "Toiletries", item: "Mouthwash — travel size", brand: "Listerine", use: "Travel", homeStock: 2, travelStock: 0, reorderAt: 1, notes: "3 fl oz", photo: "", requested: false },
   { id: "deodorant", category: "Toiletries", item: "Deodorant", brand: "Degree", use: "Both", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "2.7 oz", photo: "", requested: false },
   { id: "cotton-swabs", category: "Toiletries", item: "Cotton swabs", brand: "Unknown", use: "Home", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "Jar", photo: "", requested: false },
-  { id: "cerave", category: "Skincare", item: "Daily moisturizing lotion", brand: "CeraVe", use: "Home", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "16 fl oz", photo: "", requested: false },
-  { id: "jack-black-spf20", category: "Sunscreen", item: "Face moisturizer SPF 20", brand: "Jack Black", use: "Both", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "6.5 fl oz", photo: "", requested: false },
-  { id: "advil", category: "Medications", item: "Advil ibuprofen 200mg", brand: "Advil", use: "Both", homeStock: 1, travelStock: 1, reorderAt: 1, notes: "Tablets", photo: "", requested: false },
-  { id: "align", category: "Supplements", item: "Align probiotic", brand: "Align", use: "Home", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "63 capsules", photo: "", requested: false },
+
+  { id: "cerave-lotion", category: "Skincare", item: "Daily moisturizing lotion", brand: "CeraVe", use: "Home", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "16 fl oz", photo: "", requested: false },
+  { id: "jackblack-spf20", category: "Skincare", item: "Face moisturizer SPF 20", brand: "Jack Black", use: "Both", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "6.5 fl oz", photo: "", requested: false },
+  { id: "jackblack-serum", category: "Skincare", item: "Protein booster serum", brand: "Jack Black", use: "Both", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "Dropper", photo: "", requested: false },
+  { id: "jackblack-face-cream", category: "Skincare", item: "Ultra-calming face cream", brand: "Jack Black", use: "Both", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "Travel tube", photo: "", requested: false },
+  { id: "jackblack-scrub", category: "Skincare", item: "Energizing face scrub", brand: "Jack Black", use: "Home", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "6 fl oz", photo: "", requested: false },
+
+  { id: "spf70", category: "Sunscreen", item: "Sunscreen SPF 70", brand: "Neutrogena", use: "Home", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "5 fl oz", photo: "", requested: false },
+  { id: "spf70-travel", category: "Sunscreen", item: "Sunscreen — travel size", brand: "Neutrogena", use: "Travel", homeStock: 2, travelStock: 0, reorderAt: 1, notes: "3 fl oz", photo: "", requested: false },
+  { id: "bens-sunscreen", category: "Sunscreen", item: "Ben's sunscreen", brand: "TBD", use: "Both", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "TBD", photo: "", requested: false },
+
+  { id: "advil-home", category: "Medications", item: "Ibuprofen 200mg", brand: "Advil", use: "Home", homeStock: 360, travelStock: 0, reorderAt: 100, notes: "360ct", photo: "", requested: false },
+  { id: "advil-travel", category: "Medications", item: "Ibuprofen — travel pack", brand: "Advil", use: "Travel", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "Small bottle", photo: "", requested: false },
+  { id: "zyrtec", category: "Medications", item: "Allergy tablets", brand: "Zyrtec", use: "Both", homeStock: 50, travelStock: 0, reorderAt: 10, notes: "10mg", photo: "", requested: false },
+  { id: "bandaids", category: "Medications", item: "Band-aids / first aid", brand: "Band-Aid", use: "Both", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "Assorted", photo: "", requested: false },
+  { id: "metamucil", category: "Medications", item: "Fiber supplement packets", brand: "Metamucil", use: "Travel", homeStock: 4, travelStock: 0, reorderAt: 2, notes: "Packets", photo: "", requested: false },
+
+  { id: "b12", category: "Supplements", item: "Vitamin B12", brand: "Nature Made", use: "Home", homeStock: 90, travelStock: 0, reorderAt: 20, notes: "1000 mcg", photo: "", requested: false },
+  { id: "d3", category: "Supplements", item: "Vitamin D3", brand: "Nature Made", use: "Home", homeStock: 100, travelStock: 0, reorderAt: 20, notes: "1000 IU", photo: "", requested: false },
+  { id: "align", category: "Supplements", item: "Probiotic", brand: "Align", use: "Home", homeStock: 63, travelStock: 0, reorderAt: 15, notes: "Capsules", photo: "", requested: false },
+
+  { id: "contacts-left", category: "Vision Care", item: "Daily contacts — left", brand: "Precision1", use: "Both", homeStock: 10, travelStock: 0, reorderAt: 5, notes: "Daily", photo: "", requested: false },
+  { id: "contacts-right", category: "Vision Care", item: "Daily contacts — right", brand: "Precision1", use: "Both", homeStock: 10, travelStock: 0, reorderAt: 5, notes: "Daily", photo: "", requested: false },
+  { id: "contact-solution", category: "Vision Care", item: "Contact lens solution", brand: "ReNu", use: "Travel", homeStock: 2, travelStock: 0, reorderAt: 1, notes: "Travel bottle", photo: "", requested: false },
+
+  { id: "dopp-kit", category: "Travel Gear", item: "Toiletry / dopp kit", brand: "Tumi", use: "Travel", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "Medium", photo: "", requested: false },
+  { id: "battery-pack", category: "Travel Gear", item: "Portable battery pack", brand: "Unknown", use: "Travel", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "Slim bar", photo: "", requested: false },
+
+  { id: "magic-eraser", category: "Household", item: "Magic Eraser pads", brand: "Mr. Clean", use: "Home", homeStock: 10, travelStock: 0, reorderAt: 3, notes: "10-pack", photo: "", requested: false },
+  { id: "medical-pen", category: "Household", item: "Medical pen device", brand: "TBD", use: "Both", homeStock: 1, travelStock: 0, reorderAt: 1, notes: "Confirm label", photo: "", requested: false },
 ];
 
 const loadJSON = (key, fallback) => {
