@@ -320,7 +320,7 @@ function App() {
   const inventoryView = (
     <div style={{ display: "grid", gap: 18 }}>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: "1 1 420px", background: "#fff", border: "1px solid #dde4ee", borderRadius: 16, padding: "14px 16px", boxShadow: "0 4px 12px rgba(0,0,0,.04)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flex: "1 1 380px", background: "#fff", border: "1px solid #dde4ee", borderRadius: 14, padding: "10px 14px", boxShadow: "0 4px 12px rgba(0,0,0,.04)" }}>
           <span style={{ fontSize: 20, opacity: 0.65 }}>🔎</span>
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search..." style={{ border: "none", outline: "none", width: "100%", fontSize: 16, background: "transparent" }} />
         </div>
