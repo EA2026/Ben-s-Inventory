@@ -821,6 +821,9 @@ function statusPill(idx){
   return `<span class="pill p-ok">Stocked</span>`;
 }
 
+function delBtn(idx){
+  return '<button class="btn btn-ghost" onclick="deleteInvItem('+idx+')" style="font-size:11px;padding:3px 8px;color:var(--red);border-color:var(--red)" title="Delete">🗑</button>';
+}
 function actionBtn(idx){
   const o=activeOrd(idx);
   if(o) return `<span class="btn btn-pend" style="font-size:11px">${WF_LABEL[o.state]||o.state}</span>`;
@@ -899,12 +902,11 @@ function renderPipeline(){
   el.innerHTML=PCOLS.map(col=>{
     const its=orders.filter(o=>o.state===col.state||(col.state==='restocked'&&o.state==='declined'));
     return `<div class="pcol"><div class="pcol-h"><div class="pcol-t">${col.label}</div><span class="pill pcol-n ${col.cls}">${its.length}</span></div><div class="pcol-b">${
-      its.length?its.map(o=>`<d<div class="pcard${selOId===o.id?' sel':''}" onclick="selOrd('${o.id}')" style="position:relative">
+      its.length?its.map(o=>`<div class="pcard${selOId===o.id?' sel':''}" onclick="selOrd('${o.id}')" style="position:relative">
             <div class="pcard-name">${o.item}</div>
             <div class="pcard-meta">${o.brand} · Qty: ${o.qty}${o.note?' · '+o.note:''}<br>${tAgo(o.tl[0]?.ts||Date.now())}</div>
             <button class="pcard-del" onclick="deleteOrder('${o.id}',event)" title="Delete">✕</button>
-          </div>
-  }).join('');
+          </div>`).join('');
   if(selOId)renderDetail(selOId);
 }
 
@@ -1172,7 +1174,7 @@ function renderTable(data,el){
       <td>${qcHtml(idx)}</td>
       <td style="font-size:12px;color:var(--muted)">${item.rL}</td>
       <td>${statusPill(idx)}</td>
-      <td>${actionBtn(idx)}</td>
+      <td style="display:flex;gap:5px;align-items:center">${actionBtn(idx)}${item.custom?delBtn(idx):''}</td>
     </tr>`;
   });
   el.innerHTML=html+'</tbody></table></div>';
@@ -1186,7 +1188,7 @@ function renderCards(data,el){
       <div class="card-row"><span class="card-lbl">Home stock</span>${qcHtml(idx)}</div>
       <div class="card-row"><span class="card-lbl">Reorder at</span><span style="font-size:12px">${item.rL}</span></div>
       <div class="hr"></div>
-      <div class="card-foot">${usePill(item.use)}${statusPill(idx)}${actionBtn(idx)}${item.custom?`<button class="btn btn-ghost" onclick="deleteInvItem(${idx})" style="font-size:11px;padding:3px 7px;color:var(--red);border-color:var(--red)" title="Delete">🗑</button>`:''}</div>
+      <div class="card-foot">${usePill(item.use)}${statusPill(idx)}${actionBtn(idx)}${item.custom?delBtn(idx):''}</div>
     </div>`).join('')+'</div>';
 }
 
