@@ -1,22 +1,37 @@
-function App() {
+import { useState } from "react";
+
+const navItems = ["Dashboard", "Inventory", "Gallery", "Packing", "Orders", "Settings"];
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState("Dashboard");
+  const [showAddModal, setShowAddModal] = useState(false);
+
   return (
     <div className="dashboard">
       <aside className="sidebar">
         <h2>Ben's Inventory</h2>
         <ul>
-          <li>Dashboard</li>
-          <li>Inventory</li>
-          <li>Gallery</li>
-          <li>Packing</li>
-          <li>Orders</li>
-          <li>Settings</li>
+          {navItems.map((item) => (
+            <li
+              key={item}
+              onClick={() => setActiveTab(item)}
+              style={{
+                background: activeTab === item ? "#32456E" : "transparent",
+                fontWeight: activeTab === item ? "700" : "400",
+              }}
+            >
+              {item}
+            </li>
+          ))}
         </ul>
       </aside>
 
       <main className="main">
         <div className="header">
-          <h1>Dashboard</h1>
-          <button className="primary-btn">+ Add Item</button>
+          <h1>{activeTab}</h1>
+          <button className="primary-btn" onClick={() => setShowAddModal(true)}>
+            + Add Item
+          </button>
         </div>
 
         <div className="cards">
@@ -77,8 +92,40 @@ function App() {
           </tbody>
         </table>
       </main>
+
+      {showAddModal ? (
+        <div
+          onClick={() => setShowAddModal(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 50,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "white",
+              padding: "24px",
+              borderRadius: "18px",
+              minWidth: "320px",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+            }}
+          >
+            <h2 style={{ marginBottom: "12px" }}>Add Item</h2>
+            <p style={{ marginBottom: "16px" }}>
+              This button is now clickable.
+            </p>
+            <button className="primary-btn" onClick={() => setShowAddModal(false)}>
+              Close
+            </button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
-
-export default App;
