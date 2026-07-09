@@ -10,7 +10,7 @@ const NAVS = [
 ];
 
 const OWNER = "assistant@sestante.com";
-const BEN_EMAIL = "assistant@sestante.com";
+const BEN_EMAIL = "ben.white@sestante.com";
 
 // ─── MASTER INVENTORY ─────────────────────────────────────────────────────────
 // Each item has:
@@ -29,10 +29,10 @@ const INITIAL_INVENTORY = [
   { id:"cotton-swabs",    cat:"Toiletries",  item:"Cotton swabs",              brand:"Unknown",      size:"Jar",            qty:1,   reorderAt:1,  inTravelKit:false, packForTrip:true,  notes:"Pack a small amount for travel" },
   // SKINCARE
   { id:"cerave",          cat:"Skincare",    item:"Daily moisturizing lotion", brand:"CeraVe",       size:"16 fl oz",       qty:1,   reorderAt:1,  inTravelKit:false, packForTrip:true,  notes:"Get travel size for kit, or decant into travel bottle" },
-  { id:"jb-spf20",        cat:"Skincare",    item:"Face moisturizer SPF 20",   brand:"Jack Black",   size:"6.5 fl oz",      qty:1,   reorderAt:1,  inTravelKit:true,  packForTrip:true,  notes:"Lives in travel kit" },
-  { id:"jb-serum",        cat:"Skincare",    item:"Protein booster serum",     brand:"Jack Black",   size:"Dropper bottle", qty:1,   reorderAt:1,  inTravelKit:true,  packForTrip:true,  notes:"Lives in travel kit" },
-  { id:"jb-cream",        cat:"Skincare",    item:"Ultra-calming face cream",  brand:"Jack Black",   size:"Travel tube",    qty:1,   reorderAt:1,  inTravelKit:true,  packForTrip:true,  notes:"Travel size — lives in kit" },
-  { id:"jb-scrub",        cat:"Skincare",    item:"Energizing face scrub",     brand:"Jack Black",   size:"6 fl oz",        qty:1,   reorderAt:1,  inTravelKit:false, packForTrip:true,  notes:"Pack full size" },
+  { id:"jb-spf20",        cat:"Skincare",    item:"Face moisturizer SPF 20",   brand:"Jack Black",   size:"6.5 fl oz",      qty:1,   reorderAt:1,  inTravelKit:true,  packForTrip:true,  notes:"Lives in travel kit — reorder when less than ¼ bottle remains" },
+  { id:"jb-serum",        cat:"Skincare",    item:"Protein booster serum",     brand:"Jack Black",   size:"Dropper bottle", qty:1,   reorderAt:1,  inTravelKit:true,  packForTrip:true,  notes:"Lives in travel kit — reorder when less than ¼ bottle remains" },
+  { id:"jb-cream",        cat:"Skincare",    item:"Ultra-calming face cream",  brand:"Jack Black",   size:"Travel tube",    qty:1,   reorderAt:1,  inTravelKit:true,  packForTrip:true,  notes:"Travel size — lives in kit — reorder when less than ¼ tube remains" },
+  { id:"jb-scrub",        cat:"Skincare",    item:"Energizing face scrub",     brand:"Jack Black",   size:"6 fl oz",        qty:1,   reorderAt:1,  inTravelKit:false, packForTrip:true,  notes:"Pack full size — reorder when less than ¼ bottle remains" },
   // SUNSCREEN
   { id:"spf70",           cat:"Sunscreen",   item:"Sunscreen SPF 70",          brand:"Neutrogena",   size:"5 fl oz",        qty:1,   reorderAt:1,  inTravelKit:false, packForTrip:true,  notes:"Pack full size" },
   { id:"spf-kit",         cat:"Sunscreen",   item:"Sunscreen — travel size",   brand:"Neutrogena",   size:"3 fl oz",        qty:2,   reorderAt:1,  inTravelKit:true,  packForTrip:true,  notes:"Travel size — lives in kit" },
@@ -52,7 +52,7 @@ const INITIAL_INVENTORY = [
   { id:"contact-sol",     cat:"Vision Care", item:"Contact lens solution",     brand:"ReNu",         size:"Travel bottle",  qty:2,   reorderAt:1,  inTravelKit:true,  packForTrip:true,  notes:"Travel size — lives in kit" },
   // HOUSEHOLD
   { id:"eraser",          cat:"Household",   item:"Magic Eraser pads",         brand:"Mr. Clean",    size:"10-pack",        qty:10,  reorderAt:3,  inTravelKit:false, packForTrip:false, notes:"Ben uses to clean shoe soles — consider shoe cleaner as alternative" },
-  { id:"zepbound",        cat:"Medications", item:"Zepbound injection pen",    brand:"Eli Lilly",    size:"Weekly injection",qty:1,   reorderAt:0,  inTravelKit:false, packForTrip:true,  notes:"Ben's weekly Zepbound shot — always pack for trips" },
+  { id:"zepbound",        cat:"Medications", item:"Zepbound injection pen",    brand:"Eli Lilly",    size:"Weekly injection",qty:1,   reorderAt:0,  inTravelKit:false, packForTrip:true,  notes:"Ben's weekly Zepbound shot — pack 1 pen per week of travel, keep refrigerated until use" },
 ];
 
 
@@ -143,8 +143,8 @@ export default function App() {
     const saved = loadJ("inv3-items", null);
     const version = loadJ("inv3-version", 0);
     // Version 2: Zepbound rename, removed dopp kit/battery/advil travel pack
-    if (!saved || version < 2) {
-      localStorage.setItem("inv3-version", JSON.stringify(2));
+    if (!saved || version < 3) {
+      localStorage.setItem("inv3-version", JSON.stringify(3));
       return INITIAL_INVENTORY;
     }
     return saved;
