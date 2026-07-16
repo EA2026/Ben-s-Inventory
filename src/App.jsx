@@ -60,7 +60,16 @@ const CATEGORIES = ["All","Toiletries","Skincare","Sunscreen","Medications","Sup
 
 const uid = () => Math.random().toString(36).slice(2, 10);
 
+// ── SHARED STORAGE (syncs between Julie and Ben) ─────────────────────────────
 const loadJ = (k, d) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : d; } catch { return d; } };
+async function sharedGet(key, def) {
+  try { const r = await window.storage.get(key, true); return r ? JSON.parse(r.value) : def; } catch(e) { return def; }
+}
+async function sharedSet(key, val) {
+  try { await window.storage.set(key, JSON.stringify(val), true); } catch(e) {}
+}
+// Also save locally as instant cache
+function localSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
 
 const C = {
   navy:"#22345c", navy2:"#33476f", gold:"#d0a63d",
@@ -163,10 +172,81 @@ export default function App() {
   const [draft, setDraft] = useState({});
   const [newReq, setNewReq] = useState({ item:"", brand:"", cat:"Household", note:"" });
 
-  useEffect(() => localStorage.setItem("inv3-items", JSON.stringify(inventory)), [inventory]);
-  useEffect(() => localStorage.setItem("inv3-orders", JSON.stringify(orders)), [orders]);
-  useEffect(() => localStorage.setItem("inv3-checklist", JSON.stringify(checklist)), [checklist]);
-  useEffect(() => localStorage.setItem("inv3-trip", JSON.stringify(tripName)), [tripName]);
+  // Load shared data on mount (syncs from other device)
+  useEffect(() => {
+    (async () => {
+      try {
+        const [sharedInv, sharedOrds, sharedCheck, sharedTrip] = await Promise.all([
+          sharedGet("inv3-items", null),
+          sharedGet("inv3-orders", null),
+          sharedGet("inv3-checklist", null),
+          sharedGet("inv3-trip", null),
+        ]);
+        if (sharedInv && sharedInv.length > 0) {
+          setInventory(sharedInv);
+          localSet("inv3-items", sharedInv);
+        }
+        if (sharedOrds && sharedOrds.length > 0) {
+          setOrders(sharedOrds);
+          localSet("inv3-orders", sharedOrds);
+        }
+        if (sharedCheck && Object.keys(sharedCheck).length > 0) {
+          setChecklist(sharedCheck);
+          localSet("inv3-checklist", sharedCheck);
+        }
+        if (sharedTrip) {
+          setTripName(sharedTrip);
+          localSet("inv3-trip", sharedTrip);
+        }
+      } catch(e) { console.warn("Shared storage unavailable, using local data"); }
+    })();
+  }, []);
+
+  // Poll for changes every 15 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const sharedOrds = await sharedGet("inv3-orders", null);
+        if (sharedOrds) {
+          setOrders(prev => {
+            if (JSON.stringify(prev) !== JSON.stringify(sharedOrds)) {
+              localSet("inv3-orders", sharedOrds);
+              return sharedOrds;
+            }
+            return prev;
+          });
+        }
+        const sharedInv = await sharedGet("inv3-items", null);
+        if (sharedInv && sharedInv.length > 0) {
+          setInventory(prev => {
+            if (JSON.stringify(prev) !== JSON.stringify(sharedInv)) {
+              localSet("inv3-items", sharedInv);
+              return sharedInv;
+            }
+            return prev;
+          });
+        }
+      } catch(e) {}
+    }, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    localSet("inv3-items", inventory);
+    sharedSet("inv3-items", inventory);
+  }, [inventory]);
+  useEffect(() => {
+    localSet("inv3-orders", orders);
+    sharedSet("inv3-orders", orders);
+  }, [orders]);
+  useEffect(() => {
+    localSet("inv3-checklist", checklist);
+    sharedSet("inv3-checklist", checklist);
+  }, [checklist]);
+  useEffect(() => {
+    localSet("inv3-trip", tripName);
+    sharedSet("inv3-trip", tripName);
+  }, [tripName]);
 
   const activeOrders = useMemo(() => orders.filter(o => o.status !== "done" && o.status !== "declined"), [orders]);
   const pendingCount = useMemo(() => orders.filter(o => o.status === "requested" || o.status === "on order").length, [orders]);
