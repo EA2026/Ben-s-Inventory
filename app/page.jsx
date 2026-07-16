@@ -62,7 +62,7 @@ const CATEGORIES = ["All","Toiletries","Skincare","Sunscreen","Medications","Sup
 const uid = () => Math.random().toString(36).slice(2, 10);
 
 // ── API STORAGE (syncs between Julie and Ben via Vercel KV) ──────────────────
-const loadJ = (k, d) => { try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : d; } catch { return d; } };
+const loadJ = (k, d) => { try { if (typeof window === 'undefined') return d; const r = localStorage.getItem(k); return r ? JSON.parse(r) : d; } catch { return d; } };
 async function apiGet(key) {
   try {
     const r = await fetch('/api/data?key=' + key);
@@ -75,7 +75,7 @@ async function apiSet(key, val) {
     await fetch('/api/data', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({key, value:val}) });
   } catch(e) {}
 }
-function localSet(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
+function localSet(key, val) { try { if (typeof window === 'undefined') return; localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
 
 const C = {
   navy:"#22345c", navy2:"#33476f", gold:"#d0a63d",
@@ -159,7 +159,7 @@ export default function App() {
     const version = loadJ("inv3-version", 0);
     // Version 2: Zepbound rename, removed dopp kit/battery/advil travel pack
     if (!saved || version < 3) {
-      localStorage.setItem("inv3-version", JSON.stringify(3));
+      if (typeof window !== "undefined") localStorage.setItem("inv3-version", JSON.stringify(3));
       return INITIAL_INVENTORY;
     }
     return saved;
