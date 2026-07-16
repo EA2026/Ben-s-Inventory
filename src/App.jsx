@@ -172,7 +172,7 @@ export default function App() {
   const [draft, setDraft] = useState({});
   const [newReq, setNewReq] = useState({ item:"", brand:"", cat:"Household", note:"" });
 
-  // Load shared data on mount (syncs from other device)
+  // Load & sync shared data on mount
   useEffect(() => {
     (async () => {
       try {
@@ -182,22 +182,52 @@ export default function App() {
           sharedGet("inv3-checklist", null),
           sharedGet("inv3-trip", null),
         ]);
+
+        // INVENTORY: shared wins if it has data, otherwise push local up
+        const localInv = loadJ("inv3-items", null);
         if (sharedInv && sharedInv.length > 0) {
           setInventory(sharedInv);
           localSet("inv3-items", sharedInv);
+        } else if (localInv && localInv.length > 0) {
+          // Push local data up to shared so other device can see it
+          await sharedSet("inv3-items", localInv);
         }
+
+        // ORDERS: merge both - take whichever has more, push result to shared
+        const localOrds = loadJ("inv3-orders", []);
+        let mergedOrds = localOrds;
         if (sharedOrds && sharedOrds.length > 0) {
-          setOrders(sharedOrds);
-          localSet("inv3-orders", sharedOrds);
+          // Merge: combine both lists, deduplicate by id
+          const allOrds = [...sharedOrds];
+          localOrds.forEach(lo => {
+            if (!allOrds.find(so => so.id === lo.id)) allOrds.push(lo);
+          });
+          mergedOrds = allOrds;
         }
+        if (mergedOrds.length > 0) {
+          setOrders(mergedOrds);
+          localSet("inv3-orders", mergedOrds);
+          await sharedSet("inv3-orders", mergedOrds);
+        }
+
+        // CHECKLIST
+        const localCheck = loadJ("inv3-checklist", {});
         if (sharedCheck && Object.keys(sharedCheck).length > 0) {
           setChecklist(sharedCheck);
           localSet("inv3-checklist", sharedCheck);
+        } else if (Object.keys(localCheck).length > 0) {
+          await sharedSet("inv3-checklist", localCheck);
         }
+
+        // TRIP NAME
+        const localTrip = loadJ("inv3-trip", "");
         if (sharedTrip) {
           setTripName(sharedTrip);
           localSet("inv3-trip", sharedTrip);
+        } else if (localTrip) {
+          await sharedSet("inv3-trip", localTrip);
         }
+
       } catch(e) { console.warn("Shared storage unavailable, using local data"); }
     })();
   }, []);
